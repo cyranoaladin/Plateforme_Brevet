@@ -2,21 +2,20 @@ name: CI - BREVET MASTER
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     
-    # 1. Injection au niveau du Job pour toutes les steps (DRY & Robustesse)
     env:
       QDRANT_URL: http://localhost:6333
       ARIA_MODE: mock
       ARIA_LLM_PROVIDER: mock
       QDRANT_TIMEOUT_MS: 2500
-      SALT: "ci-dummy-salt-for-integration-32-chars"
+      SALT: "prod-salt-min-32-chars-xxxxxxxxxxxxxxxx"
 
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +23,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -36,22 +35,18 @@ jobs:
       - name: Run Unit Tests
         run: npx vitest run
 
-      # 2. Step de Contrôle de Sécurité (Fail Fast)
       - name: Env Control & Security Audit
         run: |
           echo "🌐 NODE_ENV=${NODE_ENV:-development}"
           echo "🛡️ Checking Security SALT..."
-          if [ -z "$SALT" ]; then
-            echo "❌ CRITICAL: SALT is missing. Build aborted."
-            exit 1
-          fi
+          test -n "$SALT" || (echo "❌ SALT missing" && exit 1)
           echo "✅ SALT is present."
 
       - name: Build Next.js
-        run: npm run build
+        run: NODE_ENV=production npm run build
 
-      # Production Smoke Test (Portable)
       - name: Smoke Test (Production Readiness)
         run: npm run smoke:prod
         env:
-          PORT: 3000
+          PORT: 3010
+          NODE_ENV: production
