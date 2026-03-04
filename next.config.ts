@@ -1,6 +1,21 @@
 import { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Fix: Empêche Next.js de remonter jusqu'au dossier personnel de l'utilisateur
+  // en détectant des lockfiles parasites (ex: /home/alaeddine/package-lock.json).
+  outputFileTracingRoot: __dirname,
+
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'api.dicebear.com',
+        port: '',
+        pathname: '/7.x/**',
+      },
+    ],
+  },
+
   async headers() {
     return [
       {

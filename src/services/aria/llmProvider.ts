@@ -43,7 +43,7 @@ export class OpenAIProvider implements ILlmProvider {
 }
 
 export class MockProvider implements ILlmProvider {
-  async generate(): Promise<LlmResponse> {
+  async generate(_messages: LlmMessage[]): Promise<LlmResponse> {
     await new Promise(r => setTimeout(r, 800));
     return { text: "Ceci est une réponse de test. [Source:1]" };
   }

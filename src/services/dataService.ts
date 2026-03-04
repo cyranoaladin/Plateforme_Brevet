@@ -26,6 +26,7 @@ export class LocalDataService implements IDataService {
       energy: 30,
       streakDays: 4, // Simulation d'un utilisateur actif
       mastery: {},
+      history: [],
       lastSync: new Date().toISOString(),
     };
   }

@@ -9,9 +9,9 @@ const navItems = [
   { name: "Mathématiques", path: "/learn/maths", icon: BookOpen },
   { name: "Français", path: "/learn/francais", icon: BookText },
   { name: "Histoire-Géo & EMC", path: "/learn/hg_emc", icon: BookOpen },
+  { name: "Stats & Progression", path: "/stats", icon: Trophy },
   { name: "Examens Blancs", path: "/exams", icon: GraduationCap },
   { name: "Duels", path: "/duels", icon: Swords },
-  { name: "Classement", path: "/leaderboard", icon: Trophy },
   { name: "Mentor ARIA", path: "/mentor", icon: MessageSquare },
 ];
 

@@ -7,6 +7,11 @@ export interface Rank {
   color: string;
 }
 
+export interface XPPoint {
+  date: string; // YYYY-MM-DD
+  xp: number;
+}
+
 export interface UserStats {
   xp: number;
   gems: number;
@@ -15,6 +20,7 @@ export interface UserStats {
   streakDays: number;
   mastery: Record<string, number>; // slug-notion -> score 0-100
   dailyQuests?: DailyQuestState;
+  history: XPPoint[]; // Historique pour les graphiques
 }
 
 export const RANKS: Rank[] = [

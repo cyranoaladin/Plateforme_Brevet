@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { Rank, UserStats, calculateRank } from "@/types/game";
+import { Rank, UserStats, calculateRank, XPPoint } from "@/types/game";
 import { LocalDataService } from "@/services/dataService";
 import { ToastContainer, ToastProps, ToastType } from "@/components/ui/Toast";
 import { processQuizResult, QuizInput } from "@/services/gameEngine";
@@ -18,6 +18,8 @@ interface GameContextType {
   rank: Rank;
   streakDays: number;
   mastery: Record<string, number>;
+  lastSync: string;
+  history: XPPoint[];
   dailyQuests?: DailyQuestState;
   addXp: (amount: number) => void;
   addGems: (amount: number) => void;
@@ -29,7 +31,7 @@ interface GameContextType {
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider = ({ children }: { children: React.ReactNode }) => {
-  const [stats, setStats] = useState<UserStats>({ xp: 0, gems: 0, energy: 30, streakDays: 0, mastery: {}, lastSync: "" });
+  const [stats, setStats] = useState<UserStats>({ xp: 0, gems: 0, energy: 30, streakDays: 0, mastery: {}, history: [], lastSync: "" });
   const [toasts, setToasts] = useState<ToastProps[]>([]);
 
   const addToast = useCallback((message: string, type: ToastType, amount?: number) => {
