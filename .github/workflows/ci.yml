@@ -50,6 +50,7 @@ jobs:
       - name: Build Next.js
         run: npm run build
 
+      # Production Smoke Test on fixed port 3000
       - name: Smoke Test (Production Readiness)
         run: |
           export PORT=3000
