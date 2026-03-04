@@ -50,21 +50,8 @@ jobs:
       - name: Build Next.js
         run: npm run build
 
-      # Production Smoke Test on fixed port 3000
+      # Production Smoke Test (Portable)
       - name: Smoke Test (Production Readiness)
-        run: |
-          export PORT=3000
-          export NODE_ENV=production
-          
-          # Start production server
-          npm run start &
-          PID=$!
-          
-          # Trap ensures the process is killed even if the step fails
-          trap "echo '🛑 Cleaning up server (PID: $PID)...'; kill $PID" EXIT
-          
-          echo "🚀 Waiting for production server on port $PORT..."
-          ./node_modules/.bin/wait-on http://localhost:3000/api/health --timeout 30000
-          
-          curl -f http://localhost:3000/api/health || exit 1
-          echo "✅ Production Health Check Success!"
+        run: npm run smoke:prod
+        env:
+          PORT: 3000
