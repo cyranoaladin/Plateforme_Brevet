@@ -12,6 +12,19 @@ export interface XPPoint {
   xp: number;
 }
 
+export interface DuelMatch {
+  id: string;
+  date: string;
+  subject: string;
+  notionId: string;
+  myScore: number;
+  opponentScore: number;
+  opponentName: string;
+  xpReward: number;
+  gemsReward: number;
+  status: 'victory' | 'defeat' | 'draw';
+}
+
 export interface UserStats {
   xp: number;
   gems: number;
@@ -21,6 +34,7 @@ export interface UserStats {
   mastery: Record<string, number>; // slug-notion -> score 0-100
   dailyQuests?: DailyQuestState;
   history: XPPoint[]; // Historique pour les graphiques
+  duels: DuelMatch[]; // Historique des duels
 }
 
 export const RANKS: Rank[] = [

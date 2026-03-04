@@ -34,7 +34,8 @@ export default function StatsPage() {
         lastSync: stats.lastSync,
         streakDays: stats.streakDays,
         mastery: stats.mastery,
-        history: stats.history
+        history: stats.history,
+        duels: stats.duels
       };
 
       setSubjectMastery(StatsSelector.getSubjectMastery(userStats, allNotionsMap));
