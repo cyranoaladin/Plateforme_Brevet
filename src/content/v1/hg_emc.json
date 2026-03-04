@@ -1,0 +1,208 @@
+{
+  "version": "1.0.0",
+  "subject": "hg_emc",
+  "lastUpdated": "2026-03-04T22:00:00Z",
+  "activities": [
+    {
+      "id": "hist-ww1-verdun",
+      "title": "La violence des combats : Verdun (1916)",
+      "mode": "histoire",
+      "difficulty": 2,
+      "energyCost": 3,
+      "xpReward": 80,
+      "documents": [
+        {
+          "id": "doc1",
+          "type": "text",
+          "title": "Témoignage d'un poilu (Reconstitution)",
+          "content": "La terre tremble sans cesse sous le déluge de l'artillerie. Nous sommes terrés au fond de la tranchée, couverts de boue, assourdis par le fracas des obus. L'air est irrespirable, chargé de gaz et de fumée. Chaque assaut hors du parapet est une course aveugle vers la mort, face aux mitrailleuses ennemies qui fauchent nos camarades comme des blés.",
+          "source": "Texte original inspiré des lettres de soldats de la Première Guerre mondiale",
+          "license": "original"
+        }
+      ],
+      "questions": [
+        {
+          "id": "q1",
+          "type": "qcm",
+          "instruction": "Comment appelle-t-on ce type de guerre où les soldats s'enterrent pour tenir leurs positions ?",
+          "options": ["La guerre de mouvement", "La guerre de position (ou de tranchées)", "La guerre éclair", "La guerre d'anéantissement"],
+          "correctAnswer": 1,
+          "points": 5,
+          "explanation": "La bataille de Verdun illustre parfaitement la guerre de position (ou guerre de tranchées), typique de la Première Guerre mondiale."
+        },
+        {
+          "id": "q2",
+          "type": "short_answer",
+          "instruction": "Relevez dans le texte deux armes utilisées pendant cette bataille.",
+          "correctAnswer": "artillerie et mitrailleuses",
+          "toleranceRegex": "(artillerie|obus).*mitrailleuses|mitrailleuses.*(artillerie|obus)",
+          "points": 5,
+          "explanation": "L'artillerie (canons/obus) et les mitrailleuses sont les armes responsables de la violence de masse à Verdun."
+        }
+      ]
+    },
+    {
+      "id": "hist-ww2-resistance",
+      "title": "La Résistance française",
+      "mode": "histoire",
+      "difficulty": 3,
+      "energyCost": 3,
+      "xpReward": 80,
+      "documents": [
+        {
+          "id": "doc1",
+          "type": "text",
+          "title": "Appel à refuser la défaite",
+          "content": "La défaite n'est pas définitive. J'appelle tous les Français libres, où qu'ils se trouvent, à poursuivre la lutte. Nous devons saboter les voies de communication, diffuser la vérité par des tracts clandestins et organiser des maquis dans nos campagnes. La liberté de notre patrie en dépend.",
+          "source": "Texte original illustrant les principes de la Résistance intérieure et extérieure (1940-1944)",
+          "license": "original"
+        }
+      ],
+      "questions": [
+        {
+          "id": "q1",
+          "type": "short_answer",
+          "instruction": "Citez deux actions menées par les résistants d'après ce document.",
+          "correctAnswer": "saboter et diffuser des tracts",
+          "toleranceRegex": "(saboter|sabotage).*tracts|tracts.*(saboter|sabotage)|maquis.*sabotage",
+          "points": 10,
+          "explanation": "Le sabotage, la propagande (tracts) et la lutte armée (maquis) sont les piliers de la Résistance."
+        }
+      ]
+    },
+    {
+      "id": "hist-guerre-froide",
+      "title": "Un monde bipolaire : le mur de Berlin",
+      "mode": "histoire",
+      "difficulty": 2,
+      "energyCost": 2,
+      "xpReward": 60,
+      "documents": [
+        {
+          "id": "doc1",
+          "type": "text",
+          "title": "Berlin, symbole de la Guerre Froide",
+          "content": "Dans la nuit du 12 au 13 août 1961, la ville a été coupée en deux. Un mur de béton, gardé par des miradors, sépare désormais les secteurs Ouest et Est. Des familles entières sont déchirées, incapables de se revoir. Ceux qui tentent de fuir vers l'Ouest risquent leur vie sous les balles des gardes-frontières.",
+          "source": "Texte original de synthèse historique",
+          "license": "original"
+        }
+      ],
+      "questions": [
+        {
+          "id": "q1",
+          "type": "qcm",
+          "instruction": "En quelle année le mur de Berlin a-t-il été détruit (chute du mur) ?",
+          "options": ["1945", "1961", "1989", "1991"],
+          "correctAnswer": 2,
+          "points": 10,
+          "explanation": "Le mur de Berlin a été érigé en 1961 et a chuté en novembre 1989."
+        }
+      ]
+    },
+    {
+      "id": "geo-aires-urbaines",
+      "title": "Les aires urbaines en France",
+      "mode": "geographie",
+      "difficulty": 1,
+      "energyCost": 2,
+      "xpReward": 50,
+      "documents": [
+        {
+          "id": "doc1",
+          "type": "text",
+          "title": "Le phénomène de périurbanisation",
+          "content": "Aujourd'hui, plus de 80% des Français vivent dans une aire urbaine. La population s'étale de plus en plus au-delà des banlieues, vers les couronnes périurbaines. Les ménages recherchent de l'espace et des maisons individuelles, ce qui entraîne l'artificialisation des sols et l'augmentation des migrations pendulaires (trajets domicile-travail).",
+          "source": "Synthèse géographique originale",
+          "license": "original"
+        }
+      ],
+      "questions": [
+        {
+          "id": "q1",
+          "type": "short_answer",
+          "instruction": "Comment nomme-t-on l'étalement de la ville sur les campagnes environnantes ?",
+          "correctAnswer": "périurbanisation",
+          "toleranceRegex": "p[eé]riurbanisation|[eé]talement urbain",
+          "points": 5,
+          "explanation": "La périurbanisation est le processus d'extension spatiale des villes."
+        },
+        {
+          "id": "q2",
+          "type": "short_answer",
+          "instruction": "Quelle est la conséquence environnementale mentionnée dans le texte ?",
+          "correctAnswer": "artificialisation des sols",
+          "toleranceRegex": "artificialisation|b[eé]tonnisation",
+          "points": 5,
+          "explanation": "La construction de logements et de routes détruit les terres agricoles (artificialisation)."
+        }
+      ]
+    },
+    {
+      "id": "geo-espaces-productifs",
+      "title": "Les espaces productifs",
+      "mode": "geographie",
+      "difficulty": 2,
+      "energyCost": 3,
+      "xpReward": 70,
+      "documents": [
+        {
+          "id": "doc1",
+          "type": "text",
+          "title": "La mutation de l'agriculture française",
+          "content": "L'agriculture française est hautement performante et intégrée à la mondialisation. Les régions spécialisées, comme la Beauce pour la céréaliculture ou la Bretagne pour l'élevage intensif, dominent la production. Cependant, cette agriculture productiviste fait face à des défis écologiques majeurs, poussant certains agriculteurs à se tourner vers les circuits courts ou le bio.",
+          "source": "Synthèse géographique originale",
+          "license": "original"
+        }
+      ],
+      "questions": [
+        {
+          "id": "q1",
+          "type": "qcm",
+          "instruction": "Lequel de ces espaces est un espace productif de services ?",
+          "options": ["La Beauce (Agriculture)", "La Vallée de la chimie près de Lyon (Industrie)", "La station balnéaire de La Plagne (Tourisme)", "Le port du Havre"],
+          "correctAnswer": 2,
+          "points": 10,
+          "explanation": "Le tourisme fait partie du secteur tertiaire (services), contrairement à l'agriculture (primaire) ou l'industrie (secondaire)."
+        }
+      ]
+    },
+    {
+      "id": "emc-republique",
+      "title": "Principes et valeurs de la République",
+      "mode": "emc",
+      "difficulty": 1,
+      "energyCost": 2,
+      "xpReward": 50,
+      "documents": [
+        {
+          "id": "doc1",
+          "type": "text",
+          "title": "Extrait de la Constitution de 1958 (Article 1)",
+          "content": "La France est une République indivisible, laïque, démocratique et sociale. Elle assure l'égalité devant la loi de tous les citoyens sans distinction d'origine, de race ou de religion. Elle respecte toutes les croyances.",
+          "source": "Constitution de la Ve République",
+          "license": "public-domain"
+        }
+      ],
+      "questions": [
+        {
+          "id": "q1",
+          "type": "short_answer",
+          "instruction": "Parmi les 4 principes de la République cités, lequel garantit la liberté de conscience et la neutralité de l'État ?",
+          "correctAnswer": "Laïque",
+          "toleranceRegex": "la[iï]qu?e|la[iï]cit[eé]",
+          "points": 5,
+          "explanation": "Le principe de laïcité sépare l'État des religions."
+        },
+        {
+          "id": "q2",
+          "type": "qcm",
+          "instruction": "Lequel de ces mots ne fait PAS partie de la devise de la République française ?",
+          "options": ["Liberté", "Égalité", "Fraternité", "Solidarité"],
+          "correctAnswer": 3,
+          "points": 5,
+          "explanation": "La devise officielle est 'Liberté, Égalité, Fraternité'."
+        }
+      ]
+    }
+  ]
+}

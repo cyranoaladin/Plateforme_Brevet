@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎓 BREVET MASTER - Documentation Globale (V1.0 MVP)
 
-## Getting Started
+**BREVET MASTER** est une plateforme adaptative et gamifiée de préparation au Diplôme National du Brevet (DNB) pour les élèves de Troisième, conçue selon le programme de l'Enseignement National Français.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🎮 Vision & Objectifs
+Transformer la révision du Brevet en une expérience addictive et engageante ("Gaming for Education"). 
+- **Engagement** : Utilisation des leviers d'Octalysis (XP, Rangs, Gemmes, Énergie).
+- **Adaptabilité** : Parcours personnalisés basés sur le profil de l'élève (PAD).
+- **Fiabilité** : Contenu aligné 100% sur le Bulletin Officiel de l'Éducation Nationale.
+
+---
+
+## 🛠️ Stack Technologique (Mars 2026)
+Le projet utilise une stack moderne et performante :
+- **Framework** : Next.js 14 (App Router) - SSR/SSG pour la performance.
+- **Langage** : TypeScript (Typage fort pour la maintenabilité).
+- **Styling** : Tailwind CSS (Gaming Dark Mode, Design System sur mesure).
+- **Animations** : Framer Motion (Feedback visuel immédiat, transitions fluides).
+- **Icônes** : Lucide React (Consistance visuelle).
+- **État Global** : React Context API (Persistance locale via localStorage).
+
+---
+
+## 🏗️ Structure de l'Application
+```text
+brevet-master/
+├── src/
+│   ├── app/                # Routes et Pages (Dashboard, Learn, etc.)
+│   ├── components/         # Composants UI réutilisables (Sidebar, TopBar)
+│   ├── context/            # Moteur de Gamification (XP, Rangs, Ressources)
+│   └── styles/             # Configurations Globales et Thème Gaming
+├── docs/                   # Documentation détaillée (Audit)
+└── public/                 # Assets statiques et média
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🚀 Installation et Lancement
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 1. Configuration de l'environnement
+Copiez le fichier d'exemple et remplissez vos clés API :
+```bash
+cp .env.example .env.local
+```
 
-## Learn More
+### 2. Lancer l'infrastructure (Qdrant)
+Le projet utilise Qdrant pour la recherche vectorielle. Utilisez le script utilitaire :
+```bash
+./scripts/dev/qdrant.sh start
+```
+*Autres commandes : `stop`, `reset`, `logs`, `status`.*
 
-To learn more about Next.js, take a look at the following resources:
+### 3. Lancer l'application Next.js
+```bash
+npm install
+npm run dev
+```
+La plateforme sera accessible sur `http://localhost:3000`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📑 Documentation Additionnelle
+Pour un audit approfondi, consultez les documents suivants dans le dossier `/docs` :
+1. [Architecture Technique](./docs/TECHNICAL_ARCHITECTURE.md) : Détails sur le GameContext et le routing.
+2. [Système de Gamification](./docs/GAMIFICATION_ENGINE.md) : Rangs, calcul d'XP et économie virtuelle.
+3. [Structure des Contenus](./docs/CONTENT_STRUCTURE.md) : Organisation des leçons et quiz.
+4. [Feuille de Route (Roadmap)](./docs/ROADMAP.md) : État actuel vs Future (RAG, IA ARIA).

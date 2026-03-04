@@ -1,0 +1,106 @@
+{
+  "version": "1.0.0",
+  "subject": "francais",
+  "lastUpdated": "2026-03-04T22:00:00Z",
+  "metadata": { "license": "original" },
+  "exercises": [
+    {
+      "id": "tragique-compr",
+      "title": "Analyse de texte tragique",
+      "mode": "comprehension",
+      "metadata": { "license": "original", "author": "Brevet Master Team" },
+      "supportText": "Léonore se tenait immobile face à l'immensité grise du fleuve. La lettre froissée dans sa main droite tremblait sous les assauts du vent glacé. Elle savait désormais que le choix était impossible. Partir, c'était trahir la promesse faite à son père sur son lit de mort ; rester, c'était condamner sa propre existence à l'ombre et au silence. Le ciel, lourd de nuages menaçants, semblait peser de tout son poids sur ses frêles épaules. « Que le destin est cruel, murmura-t-elle. Il tisse nos vies avec des fils de fer, et nous nous débattons en vain, pantins dérisoires d'une pièce écrite d'avance. » Une larme, solitaire et brûlante, traça un sillon sur sa joue pâle.",
+      "difficulty": 2,
+      "energyCost": 3,
+      "xpReward": 80,
+      "questions": [
+        {
+          "id": "q1",
+          "type": "qcm",
+          "instruction": "Quel est le registre littéraire dominant de ce texte ?",
+          "options": ["Comique", "Tragique", "Épique", "Didactique"],
+          "correctAnswer": 1,
+          "points": 2,
+          "explanation": "Le texte exprime la fatalité, le dilemme insoluble et le désespoir, caractéristiques du registre tragique."
+        },
+        {
+          "id": "q2",
+          "type": "short_answer",
+          "instruction": "Relevez la métaphore désignant les humains soumis au destin.",
+          "placeholder": "Votre réponse...",
+          "correctAnswer": "pantins dérisoires",
+          "points": 4,
+          "explanation": "Léonore compare les humains à des 'pantins dérisoires d'une pièce écrite d'avance'."
+        }
+      ],
+      "rubric": [
+        { "label": "Pertinence", "maxPoints": 6, "description": "Compréhension globale du texte." }
+      ]
+    },
+    {
+      "id": "langue-1",
+      "title": "Réécriture & Grammaire",
+      "mode": "langue",
+      "metadata": { "license": "original" },
+      "difficulty": 3,
+      "energyCost": 2,
+      "xpReward": 50,
+      "questions": [
+        {
+          "id": "r1",
+          "type": "rewriting",
+          "instruction": "Réécrivez cette phrase au pluriel : « La lettre froissée dans sa main tremblait sous le vent. »",
+          "correctAnswer": "Les lettres froissées dans ses mains tremblaient sous le vent.",
+          "toleranceRegex": "^Les lettres froissées dans (ses|leurs) mains tremblaient sous l[e'] ?vents?[.!?]?$",
+          "points": 5,
+          "explanation": "Attention à l'accord du verbe 'tremblaient' (-ent) avec le nouveau sujet pluriel 'Les lettres'."
+        }
+      ],
+      "rubric": []
+    },
+    {
+      "id": "dictee-1",
+      "title": "La Dictée du Brevet",
+      "mode": "dictee",
+      "metadata": { "license": "public-domain", "author": "Victor Hugo", "sourceRef": "Les Misérables" },
+      "audioUrl": "/audio/dictee_sample.mp3",
+      "difficulty": 2,
+      "energyCost": 4,
+      "xpReward": 100,
+      "questions": [
+        {
+          "id": "d1",
+          "type": "dictation_segment",
+          "instruction": "Écrivez le texte dicté ci-dessous.",
+          "correctAnswer": "Il s'endormit. Le sommeil est une chose bien étrange. On dirait que c'est l'âme qui se repose de la vie.",
+          "points": 20
+        }
+      ],
+      "rubric": [
+        { "label": "Orthographe lexicale", "maxPoints": 10, "description": "Mots du dictionnaire." },
+        { "label": "Orthographe grammaticale", "maxPoints": 10, "description": "Accords et conjugaisons." }
+      ]
+    },
+    {
+      "id": "redac-1",
+      "title": "Sujet de Réflexion",
+      "mode": "redaction",
+      "metadata": { "license": "original" },
+      "difficulty": 3,
+      "energyCost": 5,
+      "xpReward": 150,
+      "questions": [
+        {
+          "id": "w1",
+          "type": "short_answer",
+          "instruction": "Pensez-vous, comme Léonore, que le destin est tracé d'avance ou que nous sommes maîtres de nos choix ? (20 lignes)",
+          "points": 20
+        }
+      ],
+      "rubric": [
+        { "label": "Argumentation", "maxPoints": 10, "description": "Présence de deux arguments illustrés par des exemples." },
+        { "label": "Maîtrise de la langue", "maxPoints": 10, "description": "Syntaxe, orthographe, vocabulaire." }
+      ]
+    }
+  ]
+}

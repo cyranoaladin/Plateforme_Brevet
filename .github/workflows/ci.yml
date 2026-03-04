@@ -1,0 +1,69 @@
+name: CI - BREVET MASTER
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    # 1. Injection au niveau du Job pour toutes les steps (DRY & Robustesse)
+    env:
+      QDRANT_URL: http://localhost:6333
+      ARIA_MODE: mock
+      ARIA_LLM_PROVIDER: mock
+      QDRANT_TIMEOUT_MS: 2500
+      SALT: "ci-dummy-salt-for-integration-32-chars"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run Unit Tests
+        run: npx vitest run
+
+      # 2. Step de Contrôle de Sécurité (Fail Fast)
+      - name: Env Control & Security Audit
+        run: |
+          echo "🌐 NODE_ENV=${NODE_ENV:-development}"
+          echo "🛡️ Checking Security SALT..."
+          if [ -z "$SALT" ]; then
+            echo "❌ CRITICAL: SALT is missing. Build aborted."
+            exit 1
+          fi
+          echo "✅ SALT is present."
+
+      - name: Build Next.js
+        run: npm run build
+
+      - name: Smoke Test (Production Readiness)
+        run: |
+          export PORT=3000
+          export NODE_ENV=production
+          
+          # Start production server
+          npm run start &
+          PID=$!
+          
+          # Trap ensures the process is killed even if the step fails
+          trap "echo '🛑 Cleaning up server (PID: $PID)...'; kill $PID" EXIT
+          
+          echo "🚀 Waiting for production server on port $PORT..."
+          ./node_modules/.bin/wait-on http://localhost:3000/api/health --timeout 30000
+          
+          curl -f http://localhost:3000/api/health || exit 1
+          echo "✅ Production Health Check Success!"

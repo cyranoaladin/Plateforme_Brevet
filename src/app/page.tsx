@@ -1,65 +1,104 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { motion } from "framer-motion";
+import { Flame, BookOpen, ChevronRight, PlayCircle } from "lucide-react";
+import Link from "next/link";
+import { QuestWidget } from "@/components/dashboard/QuestWidget";
+
+export default function Dashboard() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="max-w-6xl mx-auto space-y-8">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+        <div>
+          <h1 className="text-4xl font-bebas text-white tracking-wider mb-2">
+            Salut Lucas !
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+          <p className="text-gray-400 text-lg">Prêt à continuer ta quête vers le Brevet ?</p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        
+        <div className="flex items-center space-x-3 bg-surface p-3 rounded-xl border border-surface-hover shadow-lg">
+          <div className="p-2 bg-orange-500/20 rounded-lg">
+            <Flame className="w-6 h-6 text-orange-500" />
+          </div>
+          <div>
+            <p className="text-sm text-gray-400">Streak de révision</p>
+            <p className="font-bebas text-2xl text-white">4 Jours 🔥</p>
+          </div>
         </div>
-      </main>
+      </div>
+
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Continue Learning */}
+        <motion.div 
+          whileHover={{ scale: 1.02 }}
+          className="lg:col-span-2 relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-500/20 to-secondary-500/20 border border-primary-500/30 p-6 flex flex-col justify-between group"
+        >
+          <div className="absolute top-0 right-0 -mt-8 -mr-8 w-40 h-40 bg-primary-500 rounded-full blur-3xl opacity-20"></div>
+          
+          <div>
+            <div className="inline-flex items-center space-x-2 px-3 py-1 bg-primary-500/30 text-primary-300 rounded-full text-sm font-medium mb-4">
+              <BookOpen className="w-4 h-4" />
+              <span>Prochaine étape recommandée</span>
+            </div>
+            <h2 className="text-3xl font-bebas text-white mb-2 group-hover:text-primary-400 transition-colors">Théorème de Thalès</h2>
+            <p className="text-gray-300 mb-6 max-w-md">Tu as eu des difficultés avec cette notion hier. ARIA a préparé une analyse ciblée pour toi.</p>
+          </div>
+          
+          <Link 
+            href="/learn/maths/thales"
+            className="self-start inline-flex items-center space-x-2 bg-primary-500 hover:bg-primary-600 text-white px-6 py-3 rounded-xl font-medium transition-all shadow-lg shadow-primary-500/30"
+          >
+            <PlayCircle className="w-5 h-5" />
+            <span>Démarrer l&apos;entraînement</span>
+            <span className="text-primary-200 text-sm ml-2">-2 ⚡</span>
+          </Link>
+        </motion.div>
+
+        {/* Daily Quests */}
+        <QuestWidget />
+
+      </div>
+
+      {/* Subjects */}
+      <div>
+        <h3 className="text-2xl font-bebas text-white mb-6 flex items-center">
+          <span className="text-primary-500 mr-2">/</span> Tes Matières
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <SubjectCard name="Mathématiques" progress={45} color="bg-blue-500" href="/learn/maths" />
+          <SubjectCard name="Français" progress={60} color="bg-red-500" href="/learn/francais" />
+          <SubjectCard name="Histoire-Géo" progress={30} color="bg-green-500" href="/learn/hg_emc" />
+          <SubjectCard name="Sciences" progress={15} color="bg-purple-500" href="/learn/sciences" />
+        </div>
+      </div>
+      
     </div>
+  );
+}
+
+function SubjectCard({ name, progress, color, href }: { name: string, progress: number, color: string, href: string }) {
+  return (
+    <Link href={href} className="group relative bg-surface p-5 rounded-xl border border-surface-hover hover:border-primary-500/50 transition-all flex flex-col justify-between min-h-[120px] overflow-hidden">
+      <div className={`absolute top-0 left-0 w-1 h-full ${color}`} />
+      <div className="flex justify-between items-start z-10">
+        <h4 className="font-bold text-gray-200 group-hover:text-white transition-colors">{name}</h4>
+        <ChevronRight className="w-5 h-5 text-gray-500 group-hover:text-primary-500 transition-colors transform group-hover:translate-x-1" />
+      </div>
+      <div className="mt-4 z-10">
+        <div className="flex justify-between text-xs text-gray-400 mb-1">
+          <span>Progression</span>
+          <span>{progress}%</span>
+        </div>
+        <div className="h-1.5 w-full bg-background rounded-full overflow-hidden">
+          <div 
+            className={`h-full ${color} opacity-80`}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+    </Link>
   );
 }

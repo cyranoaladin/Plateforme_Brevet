@@ -1,0 +1,119 @@
+{
+  "version": "1.0.0",
+  "subject": "maths",
+  "lastUpdated": "2026-03-04T20:30:00Z",
+  "notions": [
+    {
+      "id": "thales",
+      "title": "Théorème de Thalès",
+      "objectives": ["Calculer une longueur", "Démontrer que deux droites sont parallèles"],
+      "prerequisites": [
+        { "id": "proportionnalite", "label": "La proportionnalité" },
+        { "id": "triangles", "label": "Propriétés des triangles" }
+      ],
+      "estimatedDuration": 15,
+      "bloomTarget": "N3_APPLICATION",
+      "onboarding": {
+        "hook": "Savais-tu que Thalès a mesuré la hauteur de la pyramide de Khéops grâce à son ombre ?",
+        "keyPoints": ["Configuration papillon ou emboîtée", "Rapports égaux", "Droites parallèles impératives"]
+      },
+      "lesson": [
+        {
+          "id": "def-1",
+          "type": "formula",
+          "content": "Si (BC) // (DE), alors AB/AD = AC/AE = BC/DE"
+        },
+        {
+          "id": "ex-1",
+          "type": "text",
+          "content": "Le théorème s'applique uniquement si deux droites sont parallèles coupées par deux sécantes."
+        }
+      ],
+      "quiz": {
+        "energyCost": 3,
+        "xpReward": 25,
+        "gemsReward": 5,
+        "questions": [
+          {
+            "id": "q1",
+            "type": "qcm",
+            "bloom": "N1_MEMORISATION",
+            "difficulty": "FACILE",
+            "question": "Quelle est la condition sine qua non pour Thalès ?",
+            "options": ["Angle droit", "Droites parallèles", "Cercle circonscrit", "Triangle isocèle"],
+            "correctAnswer": 1,
+            "explanation": "Sans parallélisme, les rapports de proportionnalité ne sont pas garantis."
+          },
+          {
+            "id": "q2",
+            "type": "vrai_faux",
+            "bloom": "N2_COMPREHENSION",
+            "difficulty": "FACILE",
+            "question": "Le théorème de Thalès permet de calculer des angles.",
+            "correctAnswer": "faux",
+            "explanation": "Thalès concerne les longueurs. Pour les angles, on utilise la trigonométrie."
+          },
+          {
+            "id": "q3",
+            "type": "qcm",
+            "bloom": "N3_APPLICATION",
+            "difficulty": "MOYEN",
+            "question": "Dans un triangle ABC, M appartient à AB, N à AC. AM=2, AB=6, MN=3. Si (MN)//(BC), BC = ?",
+            "options": ["6", "9", "12", "1"],
+            "correctAnswer": 1,
+            "explanation": "AM/AB = MN/BC => 2/6 = 3/BC => BC = (6*3)/2 = 9."
+          },
+          {
+             "id": "q4",
+             "type": "qcm",
+             "bloom": "N1_MEMORISATION",
+             "difficulty": "FACILE",
+             "question": "Comment appelle-t-on la configuration de deux triangles opposés par le sommet ?",
+             "options": ["Triangle rectangle", "Configuration papillon", "Cercle", "Symétrie axiale"],
+             "correctAnswer": 1,
+             "explanation": "On l'appelle configuration papillon ou sablier."
+          },
+          {
+            "id": "q5",
+            "type": "vrai_faux",
+            "bloom": "N2_COMPREHENSION",
+            "difficulty": "FACILE",
+            "question": "La réciproque de Thalès sert à montrer que deux droites sont parallèles.",
+            "correctAnswer": "vrai",
+            "explanation": "Si les rapports sont égaux, alors les droites sont parallèles."
+          },
+          {
+            "id": "q6",
+            "type": "qcm",
+            "bloom": "N3_APPLICATION",
+            "difficulty": "MOYEN",
+            "question": "Si AM/AB = 0.5 et AN/AC = 0.5, les droites sont-elles parallèles ?",
+            "options": ["Oui", "Non", "Seulement si elles sont perpendiculaires", "Impossible à dire"],
+            "correctAnswer": 0,
+            "explanation": "Les rapports sont égaux, donc d'après la réciproque elles sont parallèles."
+          },
+          {
+            "id": "q7",
+            "type": "qcm",
+            "bloom": "N4_ANALYSE",
+            "difficulty": "DIFFICILE",
+            "question": "Si AM/AB = AN/AC mais les points ne sont pas dans le même ordre, les droites sont-elles parallèles ?",
+            "options": ["Oui", "Non", "Peut-être", "Seulement le lundi"],
+            "correctAnswer": 1,
+            "explanation": "L'ordre des points est crucial pour appliquer la réciproque de Thalès."
+          },
+          {
+            "id": "q8",
+            "type": "qcm",
+            "bloom": "N1_MEMORISATION",
+            "difficulty": "FACILE",
+            "question": "Thalès était un philosophe et mathématicien de quel pays ?",
+            "options": ["Égypte", "Grèce", "Rome", "Mésopotamie"],
+            "correctAnswer": 1,
+            "explanation": "Thalès de Milet était un mathématicien grec."
+          }
+        ]
+      }
+    }
+  ]
+}

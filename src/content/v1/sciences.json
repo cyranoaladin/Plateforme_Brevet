@@ -1,0 +1,60 @@
+{
+  "version": "1.0.0",
+  "subject": "sciences",
+  "lastUpdated": "2026-03-04T22:30:00Z",
+  "exercises": [
+    {
+      "id": "pc-atomes-1",
+      "subject": "physique_chimie",
+      "title": "La structure de la matière",
+      "difficulty": 2,
+      "content": "L'atome est constitué d'un noyau central chargé positivement, autour duquel gravitent des électrons chargés négativement. Le noyau est composé de protons et de neutrons. Un atome est électriquement neutre : il possède autant de protons que d'électrons.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "qcm",
+          "instruction": "Quelle est la charge électrique globale d'un atome ?",
+          "options": ["Positive", "Négative", "Neutre", "Variable"],
+          "correctAnswer": 2,
+          "points": 5,
+          "explanation": "L'atome possède autant de charges + (protons) que de charges - (électrons), son bilan est donc nul (neutre)."
+        }
+      ]
+    },
+    {
+      "id": "svt-genetique-1",
+      "subject": "svt",
+      "title": "L'information génétique",
+      "difficulty": 3,
+      "content": "L'information génétique est localisée dans le noyau des cellules, portées par les chromosomes. Ces derniers sont constitués d'ADN. Un gène est une portion de chromosome qui détermine un caractère héréditaire précis.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "short_answer",
+          "instruction": "De quelle molécule sont constitués les chromosomes ?",
+          "correctAnswer": "ADN",
+          "points": 10,
+          "explanation": "L'Acide DésoxyriboNucléique (ADN) est le support universel de l'hérédité."
+        }
+      ]
+    },
+    {
+      "id": "tech-reseaux-1",
+      "subject": "technologie",
+      "title": "L'architecture d'un réseau",
+      "difficulty": 2,
+      "content": "Un réseau informatique permet de relier plusieurs équipements (ordinateurs, tablettes, serveurs) pour échanger des données. Le routeur assure la liaison avec Internet, tandis que le commutateur (switch) distribue l'information au sein du réseau local.",
+      "questions": [
+        {
+          "id": "q1",
+          "type": "qcm",
+          "instruction": "Quel composant permet de connecter le réseau local à Internet ?",
+          "options": ["Le Switch", "L'imprimante", "Le Routeur", "Le Câble RJ45"],
+          "correctAnswer": 2,
+          "points": 10,
+          "explanation": "Le routeur est la passerelle entre votre réseau privé et le réseau public (Internet)."
+        }
+      ]
+    }
+  ]
+}
