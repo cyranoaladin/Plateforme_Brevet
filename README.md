@@ -1,69 +1,61 @@
-# 🎓 BREVET MASTER - Documentation Globale (V1.0 MVP)
+# BREVET MASTER 🎓
 
-**BREVET MASTER** est une plateforme adaptative et gamifiée de préparation au Diplôme National du Brevet (DNB) pour les élèves de Troisième, conçue selon le programme de l'Enseignement National Français.
+![CI Status](https://github.com/cyranoaladin/Plateforme_Brevet/actions/workflows/ci.yml/badge.svg)
+![Node Version](https://img.shields.io/badge/node-v22.21.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
 
----
+**BREVET MASTER** est une plateforme EdTech gamifiée conçue pour la préparation au **Diplôme National du Brevet (DNB) 2026**. Elle intègre un mentor IA (ARIA) basé sur une architecture RAG certifiée.
 
-## 🎮 Vision & Objectifs
-Transformer la révision du Brevet en une expérience addictive et engageante ("Gaming for Education"). 
-- **Engagement** : Utilisation des leviers d'Octalysis (XP, Rangs, Gemmes, Énergie).
-- **Adaptabilité** : Parcours personnalisés basés sur le profil de l'élève (PAD).
-- **Fiabilité** : Contenu aligné 100% sur le Bulletin Officiel de l'Éducation Nationale.
+## 🚀 Fonctionnalités Clés
 
----
+- **Curriculum Complet** : Mathématiques, Français, Histoire-Géo/EMC et Sciences.
+- **Mentor ARIA (RAG)** : Analyse de documents officiels, citations certifiées et aide personnalisée.
+- **Gamification** : Système d'XP, Rangs, Quêtes quotidiennes et Énergie.
+- **Duels 1v1** : Affrontez des bots simulés sur des notions spécifiques pour booster votre progression.
+- **Leaderboard** : Classement dynamique mondial (local-first) pour stimuler la compétition.
+- **Dashboard Statistiques** : Suivi de la maîtrise par matière et historique de progression.
 
-## 🛠️ Stack Technologique (Mars 2026)
-Le projet utilise une stack moderne et performante :
-- **Framework** : Next.js 14 (App Router) - SSR/SSG pour la performance.
-- **Langage** : TypeScript (Typage fort pour la maintenabilité).
-- **Styling** : Tailwind CSS (Gaming Dark Mode, Design System sur mesure).
-- **Animations** : Framer Motion (Feedback visuel immédiat, transitions fluides).
-- **Icônes** : Lucide React (Consistance visuelle).
-- **État Global** : React Context API (Persistance locale via localStorage).
+## 🛠️ Stack Technique
 
----
+- **Framework** : Next.js 14+ (App Router), TypeScript strict.
+- **Style** : Tailwind CSS (Dark Mode), Framer Motion.
+- **Vector DB** : Qdrant (Retrieval Augmented Generation).
+- **Sécurité** : RGPD Strict (IP hashing), Rate Limiting anonyme.
+- **Local-First** : Persistance via `localStorage` avec normalisation de schéma automatique.
 
-## 🏗️ Structure de l'Application
-```text
-brevet-master/
-├── src/
-│   ├── app/                # Routes et Pages (Dashboard, Learn, etc.)
-│   ├── components/         # Composants UI réutilisables (Sidebar, TopBar)
-│   ├── context/            # Moteur de Gamification (XP, Rangs, Ressources)
-│   └── styles/             # Configurations Globales et Thème Gaming
-├── docs/                   # Documentation détaillée (Audit)
-└── public/                 # Assets statiques et média
-```
+## 📦 Installation
 
----
-
-## 🚀 Installation et Lancement
-
-### 1. Configuration de l'environnement
-Copiez le fichier d'exemple et remplissez vos clés API :
 ```bash
+# Utiliser la bonne version de Node
+nvm use
+
+# Installer les dépendances
+npm ci
+
+# Configurer les variables d'environnement
 cp .env.example .env.local
+# Éditez .env.local avec vos clés (OpenAI/OpenRouter si mode RAG activé)
 ```
 
-### 2. Lancer l'infrastructure (Qdrant)
-Le projet utilise Qdrant pour la recherche vectorielle. Utilisez le script utilitaire :
-```bash
-./scripts/dev/qdrant.sh start
-```
-*Autres commandes : `stop`, `reset`, `logs`, `status`.*
+## ⌨️ Scripts Disponibles
 
-### 3. Lancer l'application Next.js
-```bash
-npm install
-npm run dev
-```
-La plateforme sera accessible sur `http://localhost:3000`.
+- `npm run dev` : Lance le serveur de développement.
+- `npm run build` : Génère le build de production optimisé.
+- `npm run start` : Démarre le serveur de production.
+- `npm run lint` : Vérifie la qualité du code (ESLint).
+- `npx vitest run` : Exécute l'intégralité de la suite de tests (75+ tests).
+- `npm run smoke:prod` : Lance un test de santé sur le build de production (Smoke Test).
+
+## 🧪 Qualité & Fiabilité
+
+Le projet applique des barrières de qualité strictes :
+- **Atomic Energy Spending** : La consommation d'énergie est garantie avant le lancement des défis.
+- **Schema-on-Read** : Les données utilisateur sont migrées et normalisées à chaque lecture pour éviter les crashs.
+- **Circuit Breaker** : Le moteur RAG se protège automatiquement en cas de défaillance de la base vectorielle.
+
+## 🛡️ Sécurité
+
+Le projet utilise un `SALT` environnemental pour anonymiser les identifiants élèves. En production, le serveur refusera de démarrer si cette variable est manquante.
 
 ---
-
-## 📑 Documentation Additionnelle
-Pour un audit approfondi, consultez les documents suivants dans le dossier `/docs` :
-1. [Architecture Technique](./docs/TECHNICAL_ARCHITECTURE.md) : Détails sur le GameContext et le routing.
-2. [Système de Gamification](./docs/GAMIFICATION_ENGINE.md) : Rangs, calcul d'XP et économie virtuelle.
-3. [Structure des Contenus](./docs/CONTENT_STRUCTURE.md) : Organisation des leçons et quiz.
-4. [Feuille de Route (Roadmap)](./docs/ROADMAP.md) : État actuel vs Future (RAG, IA ARIA).
+Développé avec ❤️ pour la réussite de tous les collégiens.
