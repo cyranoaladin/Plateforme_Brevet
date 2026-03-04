@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { Rank, UserStats, calculateRank, XPPoint } from "@/types/game";
+import { Rank, UserStats, calculateRank, XPPoint, DuelMatch } from "@/types/game";
 import { LocalDataService } from "@/services/dataService";
 import { ToastContainer, ToastProps, ToastType } from "@/components/ui/Toast";
 import { processQuizResult, QuizInput } from "@/services/gameEngine";
@@ -21,10 +21,12 @@ interface GameContextType {
   mastery: Record<string, number>;
   lastSync: string;
   history: XPPoint[];
+  duels: DuelMatch[];
   dailyQuests?: DailyQuestState;
   addXp: (amount: number) => void;
   addGems: (amount: number) => void;
-  useEnergy: (amount: number) => boolean;
+  consumeEnergy: (amount: number) => boolean;
+  completeDuel: (match: DuelMatch) => void;
   completeQuiz: (input: QuizInput) => { earnedXP: number, earnedGems: number, newMastery: number, summary: string };
   toasts: ToastProps[];
 }
@@ -39,6 +41,7 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
     streakDays: 0, 
     mastery: {}, 
     history: [], 
+    duels: [],
     lastSync: "" 
   });
   const [toasts, setToasts] = useState<ToastProps[]>([]);
@@ -56,7 +59,6 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
     async function init() {
       const initialStats = await syncService.getStats();
       
-      // 1. Chargement de TOUTES les notions pour le QuestEngine
       const subjects = getAllSubjects();
       const allNotions: NotionWithSubject[] = [];
       
@@ -65,7 +67,6 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
         notions.forEach(n => allNotions.push({ ...n, subject: sub }));
       }));
 
-      // 2. Génération/Validation des quêtes du jour
       const today = new Date().toISOString().split('T')[0];
       if (!initialStats.dailyQuests || initialStats.dailyQuests.date !== today) {
         initialStats.dailyQuests = QuestEngine.generateDailyQuests(initialStats, today, allNotions);
@@ -107,13 +108,28 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
     addToast("Gemmes reçues !", "gems", amount);
   };
 
-  const useEnergy = (amount: number) => {
+  const consumeEnergy = (amount: number) => {
     if (stats.energy >= amount) {
       setStats(prev => ({ ...prev, energy: prev.energy - amount, lastSync: new Date().toISOString() }));
       return true;
     }
     addToast("Énergie insuffisante !", "success");
     return false;
+  };
+
+  const completeDuel = (match: DuelMatch) => {
+    setStats(prev => {
+      const newXp = prev.xp + match.xpReward;
+      return {
+        ...prev,
+        xp: newXp,
+        gems: prev.gems + match.gemsReward,
+        duels: [match, ...prev.duels].slice(0, 50),
+        history: updateXPHistory(prev.history, newXp),
+        lastSync: new Date().toISOString()
+      };
+    });
+    addToast(`Duel : ${match.status.toUpperCase()}`, match.status === 'victory' ? "levelup" : "success");
   };
 
   const completeQuiz = (input: QuizInput) => {
@@ -143,7 +159,6 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
         questResult.newlyCompleted.forEach(q => {
           nextState.xp += q.xpReward;
           nextState.gems += q.gemsReward;
-          // Mise à jour de l'historique suite au gain XP de quête
           nextState.history = updateXPHistory(nextState.history, nextState.xp);
           
           setTimeout(() => {
@@ -167,7 +182,7 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <GameContext.Provider value={{ ...stats, rank: currentRank, addXp, addGems, useEnergy, completeQuiz, toasts }}>
+    <GameContext.Provider value={{ ...stats, rank: currentRank, addXp, addGems, consumeEnergy, completeDuel, completeQuiz, toasts }}>
       {children}
       <ToastContainer toasts={toasts} removeToast={removeToast} />
     </GameContext.Provider>
