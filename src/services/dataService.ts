@@ -1,4 +1,4 @@
-import { UserStats } from "@/types/game";
+import { UserStats, DuelMatch, XPPoint } from "@/types/game";
 
 export interface IDataService {
   getStats(): Promise<UserStats>;
@@ -32,23 +32,52 @@ export class LocalDataService implements IDataService {
   }
 
   /**
-   * Garantit que tous les champs requis sont présents sans écraser les données existantes.
+   * Garantit que tous les champs requis sont présents et typés correctement.
    */
   private normalizeStats(raw: unknown): UserStats {
     const defaults = this.getDefaultStats();
-    if (!raw || typeof raw !== 'object') return defaults;
+    if (!raw || typeof raw !== 'object' || raw === null) return defaults;
     
-    const data = raw as Partial<UserStats>;
+    const data = raw as Record<string, unknown>;
     
+    // 1. Mastery (Object, not Array)
+    const mastery = (typeof data.mastery === 'object' && data.mastery !== null && !Array.isArray(data.mastery))
+      ? (data.mastery as Record<string, number>)
+      : defaults.mastery;
+
+    // 2. History (Array of XPPoint)
+    const rawHistory = data.history;
+    const history: XPPoint[] = Array.isArray(rawHistory)
+      ? rawHistory.filter((p: unknown): p is XPPoint => {
+          const point = p as Record<string, unknown>;
+          return typeof point?.date === 'string' && typeof point?.xp === 'number';
+        })
+      : defaults.history;
+
+    // 3. Duels (Array of DuelMatch)
+    const rawDuels = data.duels;
+    const duels: DuelMatch[] = Array.isArray(rawDuels)
+      ? rawDuels.filter((d: unknown): d is DuelMatch => {
+          const match = d as Record<string, unknown>;
+          return typeof match?.id === 'string' && 
+                 typeof match?.date === 'string' && 
+                 typeof match?.myScore === 'number' &&
+                 ['victory', 'defeat', 'draw'].includes(match?.status as string);
+        })
+      : defaults.duels;
+
     return {
-      ...defaults,
-      ...data,
-      // On force l'initialisation des tableaux/objets s'ils sont null ou undefined dans data
-      mastery: data.mastery || {},
-      history: data.history || [],
-      duels: data.duels || [],
-      // lastSync est conservé s'il existe, sinon on prend celui du default
-      lastSync: data.lastSync || defaults.lastSync
+      xp: typeof data.xp === 'number' ? data.xp : defaults.xp,
+      gems: typeof data.gems === 'number' ? data.gems : defaults.gems,
+      // 4. Energy Clamp (0-30)
+      energy: typeof data.energy === 'number' ? Math.max(0, Math.min(30, data.energy)) : defaults.energy,
+      // 5. Streak Clamp (>= 0)
+      streakDays: typeof data.streakDays === 'number' ? Math.max(0, data.streakDays) : defaults.streakDays,
+      mastery,
+      history,
+      duels,
+      // 6. LastSync (String)
+      lastSync: typeof data.lastSync === 'string' ? data.lastSync : defaults.lastSync
     };
   }
 

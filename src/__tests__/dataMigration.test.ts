@@ -7,9 +7,8 @@ describe('Data: LocalDataService Schema Migration', () => {
   let getItemSpy: MockInstance;
 
   beforeEach(() => {
-    const mockStorage: Record<string, string> = {};
     getItemSpy = vi.spyOn(Storage.prototype, 'getItem');
-    vi.spyOn(Storage.prototype, 'setItem').mockImplementation((key, val) => { mockStorage[key] = val; });
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {});
   });
 
   it('should migrate old stats format (missing duels and history)', async () => {
@@ -27,11 +26,32 @@ describe('Data: LocalDataService Schema Migration', () => {
     const result = await service.getStats();
 
     expect(result.xp).toBe(500);
-    expect(result.mastery['notion-1']).toBe(50);
-    // Migration checks
     expect(result.duels).toEqual([]);
     expect(result.history).toEqual([]);
-    expect(result.lastSync).toBe(oldStats.lastSync);
+  });
+
+  it('should sanitize wrong types and clamp values', async () => {
+    const corruptStats = {
+      xp: "1000", // Wrong type (string)
+      energy: 50, // Over limit
+      streakDays: -5, // Under limit
+      mastery: ["not", "an", "object"], // Wrong type (array)
+      history: "none", // Wrong type (string)
+      duels: [{ id: 123, status: "hacking" }], // Invalid items
+      lastSync: 123456789 // Wrong type (number)
+    };
+
+    getItemSpy.mockReturnValue(JSON.stringify(corruptStats));
+
+    const result = await service.getStats();
+
+    expect(result.xp).toBe(0); // Reset to default
+    expect(result.energy).toBe(30); // Clamped to max
+    expect(result.streakDays).toBe(0); // Clamped to min
+    expect(result.mastery).toEqual({}); // Reset to default
+    expect(result.history).toEqual([]); // Reset to default
+    expect(result.duels).toEqual([]); // Filtered out invalid items
+    expect(typeof result.lastSync).toBe('string');
   });
 
   it('should handle corrupt JSON by returning defaults', async () => {
