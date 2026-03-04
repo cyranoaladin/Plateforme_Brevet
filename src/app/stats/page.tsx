@@ -106,7 +106,7 @@ export default function StatsPage() {
                     <span className="text-xs text-red-400 font-bold uppercase tracking-widest">Maîtrise : {stats.mastery[n.id] || 0}%</span>
                   </div>
                   <Link 
-                    href={`/mentor?query=Explique moi ${n.title}`}
+                    href={`/mentor?query=${encodeURIComponent(`Explique-moi ${n.title}`)}`}
                     className="bg-secondary-500/10 hover:bg-secondary-500/20 text-secondary-400 px-4 py-2 rounded-xl text-xs font-bold flex items-center transition-all"
                   >
                     <Sparkles className="w-4 h-4 mr-2" /> Plan ARIA
