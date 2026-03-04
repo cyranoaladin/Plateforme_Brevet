@@ -7,47 +7,67 @@ import { DuelEngine, MCQQuestion } from "@/services/duelEngine";
 import { getAllSubjects, getAllNotionsBySubject } from "@/content/registry";
 import { NotionWithSubject } from "@/services/questEngine";
 import { DuelMatch } from "@/components/duels/DuelMatch";
+import { UserStats } from "@/types/game";
 
 export default function DuelsLobby() {
   const { duels, energy, consumeEnergy, mastery } = useGame();
   const [isSearching, setIsSearching] = useState(false);
+  const [isReadyNotions, setIsReadyNotions] = useState(false);
   const [activeMatch, setActiveMatch] = useState<{ notion: NotionWithSubject, questions: MCQQuestion[], opponentName: string } | null>(null);
   const [allNotions, setAllNotions] = useState<NotionWithSubject[]>([]);
 
   useEffect(() => {
     async function load() {
-      const subjects = getAllSubjects();
-      const notions: NotionWithSubject[] = [];
-      for (const sub of subjects) {
-        const data = await getAllNotionsBySubject(sub);
-        data.forEach(n => notions.push({ ...n, subject: sub }));
+      try {
+        const subjects = getAllSubjects();
+        const notions: NotionWithSubject[] = [];
+        for (const sub of subjects) {
+          const data = await getAllNotionsBySubject(sub);
+          data.forEach(n => notions.push({ ...n, subject: sub }));
+        }
+        setAllNotions(notions);
+        setIsReadyNotions(true);
+      } catch (err) {
+        console.error("Failed to load notions for Duels:", err);
       }
-      setAllNotions(notions);
     }
     load();
   }, []);
 
   const startDuel = () => {
-    // 1. Atomic Energy Check & Spending
-    // consumeEnergy returns false and toasts if energy < 5
-    if (!consumeEnergy(5)) return;
+    if (!isReadyNotions) return;
+    if (energy < 5) return;
 
     setIsSearching(true);
     
-    // 2. Intent-locked Rival Search Simulation
+    // Simulation d'une recherche d'adversaire avec préparation atomique
     setTimeout(() => {
       try {
-        const notion = DuelEngine.pickDuelNotion(mastery, allNotions);
+        // 1. Préparation du contexte (peut throw)
+        const stats = { mastery } as UserStats;
+        const notion = DuelEngine.pickDuelNotion(stats.mastery, allNotions);
         const questions = DuelEngine.pickMCQQuestions(notion, 3);
         const opponentName = DuelEngine.generateOpponentName();
 
-        setActiveMatch({ notion, questions, opponentName });
-      } catch (err) {
-        console.error("Duel initialization failed:", err);
+        // 2. Consommation d'énergie (Étape finale de validation)
+        if (consumeEnergy(5)) {
+          setActiveMatch({ notion, questions, opponentName });
+        }
+      } catch (err: unknown) {
+        // 3. Gestion des erreurs de contenu / système
+        const error = err as Error;
+        const message = error.message === "DUEL_NO_COMPATIBLE_NOTION" || error.message === "DUEL_NOT_ENOUGH_MCQ"
+          ? "Duel indisponible : contenu pédagogique insuffisant."
+          : "Une erreur est survenue lors de la création du duel.";
+        
+        console.error("Duel Init Error:", err);
+        // Le GameContext gère déjà les toasts via consumeEnergy si besoin, 
+        // ici on gère spécifiquement l'erreur système.
+        alert(message); // Remplaçable par un toast UI plus complexe si disponible
       } finally {
         setIsSearching(false);
       }
-    }, 2000);
+    }, 1500);
   };
 
   if (activeMatch) {
@@ -71,13 +91,18 @@ export default function DuelsLobby() {
         
         <button
           onClick={startDuel}
-          disabled={isSearching || energy < 5}
-          className="group relative bg-secondary-500 hover:bg-secondary-600 disabled:opacity-50 text-white px-8 py-4 rounded-2xl font-bold flex items-center space-x-3 transition-all shadow-lg shadow-secondary-500/20 active:scale-95"
+          disabled={isSearching || energy < 5 || !isReadyNotions}
+          className="group relative bg-secondary-500 hover:bg-secondary-600 disabled:opacity-50 disabled:bg-surface-hover text-white px-8 py-4 rounded-2xl font-bold flex items-center space-x-3 transition-all shadow-lg shadow-secondary-500/20 active:scale-95 min-w-[240px] justify-center"
         >
           {isSearching ? (
             <>
               <Loader2 className="w-6 h-6 animate-spin" />
-              <span>Recherche d&apos;un rival...</span>
+              <span>Rival en approche...</span>
+            </>
+          ) : !isReadyNotions ? (
+            <>
+              <Loader2 className="w-6 h-6 animate-spin" />
+              <span>Chargement du programme...</span>
             </>
           ) : (
             <>
