@@ -10,7 +10,8 @@ import {
   MessageSquare, 
   GraduationCap, 
   BookText,
-  Medal 
+  Medal,
+  Users
 } from "lucide-react";
 
 const navItems = [
@@ -23,6 +24,7 @@ const navItems = [
   { name: "Examens Blancs", path: "/exams", icon: GraduationCap },
   { name: "Duels", path: "/duels", icon: Swords },
   { name: "Mentor ARIA", path: "/mentor", icon: MessageSquare },
+  { name: "Espace Parent", path: "/parent", icon: Users },
 ];
 
 export function Sidebar() {
