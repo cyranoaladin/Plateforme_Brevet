@@ -12,6 +12,10 @@ function getSeededRandom(seed: number) {
   return x - Math.floor(x);
 }
 
+/**
+ * Moteur de Quêtes Dynamiques.
+ * Aligné avec le contrat asynchrone du registry.
+ */
 export class QuestEngine {
   
   /**
