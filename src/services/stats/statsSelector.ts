@@ -53,11 +53,15 @@ export const StatsSelector = {
 
   /**
    * Formate les données pour le graphique XP.
+   * Retourne les 7 derniers points triés par date.
    */
   getXPProgress: (stats: UserStats) => {
-    if (stats.history.length === 0) {
+    if (!stats.history || stats.history.length === 0) {
       return [{ date: 'Début', xp: 0 }, { date: 'Aujourd\'hui', xp: stats.xp }];
     }
-    return stats.history.slice(-7); // Top 7 derniers jours
+    
+    return [...stats.history]
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(-7);
   }
 };

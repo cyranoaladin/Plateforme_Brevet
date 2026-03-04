@@ -8,6 +8,7 @@ import { processQuizResult, QuizInput } from "@/services/gameEngine";
 import { QuestEngine, NotionWithSubject } from "@/services/questEngine";
 import { DailyQuestState } from "@/types/quests";
 import { getAllSubjects, getAllNotionsBySubject } from "@/content/registry";
+import { updateXPHistory } from "@/utils/stats/historyHelper";
 
 const syncService = new LocalDataService();
 
@@ -31,7 +32,15 @@ interface GameContextType {
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider = ({ children }: { children: React.ReactNode }) => {
-  const [stats, setStats] = useState<UserStats>({ xp: 0, gems: 0, energy: 30, streakDays: 0, mastery: {}, history: [], lastSync: "" });
+  const [stats, setStats] = useState<UserStats>({ 
+    xp: 0, 
+    gems: 0, 
+    energy: 30, 
+    streakDays: 0, 
+    mastery: {}, 
+    history: [], 
+    lastSync: "" 
+  });
   const [toasts, setToasts] = useState<ToastProps[]>([]);
 
   const addToast = useCallback((message: string, type: ToastType, amount?: number) => {
@@ -79,7 +88,14 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
     const oldRank = calculateRank(stats.xp);
     const newXp = stats.xp + amount;
     const newRank = calculateRank(newXp);
-    setStats(prev => ({ ...prev, xp: newXp, lastSync: new Date().toISOString() }));
+    
+    setStats(prev => ({ 
+      ...prev, 
+      xp: newXp, 
+      history: updateXPHistory(prev.history, newXp),
+      lastSync: new Date().toISOString() 
+    }));
+
     addToast("XP gagné !", "xp", amount);
     if (newRank.level > oldRank.level) {
       addToast(`NOUVEAU RANG : ${newRank.name} !`, "levelup");
@@ -104,11 +120,13 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
     const result = processQuizResult(stats, input);
     
     setStats(prev => {
-      const nextState = {
+      const newTotalXp = prev.xp + result.earnedXP;
+      const nextState: UserStats = {
         ...prev,
-        xp: prev.xp + result.earnedXP,
+        xp: newTotalXp,
         gems: prev.gems + result.earnedGems,
         mastery: { ...prev.mastery, [input.notionId]: result.newMastery },
+        history: updateXPHistory(prev.history, newTotalXp),
         lastSync: new Date().toISOString()
       };
 
@@ -125,6 +143,9 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
         questResult.newlyCompleted.forEach(q => {
           nextState.xp += q.xpReward;
           nextState.gems += q.gemsReward;
+          // Mise à jour de l'historique suite au gain XP de quête
+          nextState.history = updateXPHistory(nextState.history, nextState.xp);
+          
           setTimeout(() => {
             addToast(`Quête : ${q.title}`, "xp", q.xpReward);
           }, 500);
