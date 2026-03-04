@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] - 2026-03-05
+
+### Added
+- **Parent Dashboard** : Nouvelle vue `/parent` dédiée au suivi parental avec indicateurs de progression, bilan par matière et recommandations actionnables.
+- **ParentSelector** : Moteur de calcul des recommandations pédagogiques basées sur l'état de l'élève.
+
+### Fixed
+- **Linting** : Correction finale des imports inutilisés pour un rapport 0 erreur / 0 warning.
+
 ## [0.2.0] - 2026-03-04
 
 ### Added
