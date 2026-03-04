@@ -7,7 +7,9 @@
     "build": "next build",
     "check:routes": "find src/app -name '*\\\\*' -type d | grep . && exit 1 || exit 0",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "smoke:prod": "NODE_ENV=production PORT=${PORT:-3000} SALT=${SALT:-dev-salt-min-32-chars-xxxxxxxxxxxxxxxx} next start",
+    "health:wait": "wait-on http://localhost:${PORT:-3000}/api/health --timeout 30000 && curl -f http://localhost:${PORT:-3000}/api/health"
   },
   "dependencies": {
     "@qdrant/js-client-rest": "^1.17.0",
