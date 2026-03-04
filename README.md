@@ -45,6 +45,15 @@ cp .env.example .env.local
 - `npm run lint` : Vérifie la qualité du code (ESLint).
 - `npx vitest run` : Exécute l'intégralité de la suite de tests (75+ tests).
 - `npm run smoke:prod` : Lance un test de santé sur le build de production (Smoke Test).
+- `npm run ingest:pdf` : Déclenche le pipeline d'ingestion des documents PDF situés dans `data/pdfs/`.
+
+## 📂 Ingestion de documents (RAG)
+
+Pour enrichir la base de connaissances du Mentor ARIA :
+1. Placez vos fichiers PDF dans le dossier `data/pdfs/`.
+2. Exécutez `npm run ingest:pdf`.
+3. Les documents sont automatiquement découpés en chunks et stockés dans la base vectorielle Qdrant (si `ARIA_MODE=rag`).
+   - Options : `--dir <path>`, `--dry-run`, `--chunk-size <int>`, `--overlap <int>`.
 
 ## 🧪 Qualité & Fiabilité
 

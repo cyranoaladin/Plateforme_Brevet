@@ -8,7 +8,8 @@
     "check:routes": "find src/app -name '*\\\\*' -type d | grep . && exit 1 || exit 0",
     "start": "next start",
     "lint": "eslint",
-    "smoke:prod": "node scripts/smoke-prod.mjs"
+    "smoke:prod": "node scripts/smoke-prod.mjs",
+    "ingest:pdf": "tsx scripts/ingest-pdfs.ts"
   },
   "dependencies": {
     "@qdrant/js-client-rest": "^1.17.0",
@@ -16,9 +17,11 @@
     "framer-motion": "^12.35.0",
     "lucide-react": "^0.577.0",
     "next": "16.1.6",
+    "pdf-parse": "^2.4.5",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "tailwind-merge": "^3.5.0",
+    "tsx": "^4.21.0",
     "uuid": "^13.0.0",
     "zod": "^4.3.6"
   },
@@ -27,6 +30,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^20",
+    "@types/pdf-parse": "^1.1.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/uuid": "^10.0.0",
