@@ -14,9 +14,18 @@ vi.mock('@qdrant/js-client-rest', () => ({
 
 import { VectorStoreService as VectorStoreServiceType } from '../services/aria/vectorStore';
 
+import { QdrantClient } from '@qdrant/js-client-rest';
+
 describe('Reliability: VectorStoreService (High Speed)', () => {
   
   let VectorStoreService: typeof VectorStoreServiceType;
+
+  it('should instantiate QdrantClient with checkCompatibility false by default', async () => {
+    // Le singleton est déjà initialisé dans beforeEach, on vérifie l'appel au mock
+    expect(QdrantClient).toHaveBeenCalledWith(expect.objectContaining({
+      checkCompatibility: false
+    }));
+  });
 
   beforeEach(async () => {
     // 2. Reset de l'environnement et du module

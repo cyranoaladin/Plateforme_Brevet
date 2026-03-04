@@ -42,6 +42,7 @@ async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 export class VectorStoreService {
   private static client = new QdrantClient({
     url: env.QDRANT_URL,
+    checkCompatibility: env.QDRANT_CHECK_COMPATIBILITY,
   });
 
   private static isBreakerOpen(): boolean {

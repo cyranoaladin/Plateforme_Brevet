@@ -4,6 +4,7 @@ const envSchema = z.object({
   // Infrastructure
   QDRANT_URL: z.string().url().default("http://localhost:6333"),
   QDRANT_TIMEOUT_MS: z.coerce.number().default(2500),
+  QDRANT_CHECK_COMPATIBILITY: z.preprocess((val) => val === "true", z.boolean().default(false)),
   
   // RAG Logic
   ARIA_MODE: z.enum(["mock", "rag"]).default("mock"),
