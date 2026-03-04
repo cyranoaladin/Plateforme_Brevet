@@ -35,16 +35,21 @@ export class DuelEngine {
     
     const pool = weakNotions.length > 0 ? weakNotions : validNotions;
     if (pool.length === 0) {
-      throw new Error("Aucune notion compatible avec le mode Duel n'a été trouvée.");
+      throw new Error("DUEL_NO_COMPATIBLE_NOTION");
     }
     return pool[Math.floor(Math.random() * pool.length)];
   }
 
   /**
-   * Extrait exactement 3 questions QCM d'une notion.
+   * Extrait exactement count questions QCM d'une notion.
    */
   static pickMCQQuestions(notion: NotionWithSubject, count = 3): MCQQuestion[] {
     const mcqs = notion.quiz.questions.filter(isMCQ);
+    
+    if (mcqs.length < count) {
+      throw new Error("DUEL_NOT_ENOUGH_MCQ");
+    }
+
     return [...mcqs]
       .sort(() => Math.random() - 0.5)
       .slice(0, count);
