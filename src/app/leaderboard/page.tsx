@@ -3,7 +3,7 @@
 import { useGame } from "@/context/GameContext";
 import { LeaderboardService, LeaderboardEntry } from "@/services/leaderboard/leaderboardService";
 import { motion } from "framer-motion";
-import { Trophy, TrendingUp, TrendingDown, Minus, Medal } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Medal } from "lucide-react";
 import Image from "next/image";
 
 export default function LeaderboardPage() {
