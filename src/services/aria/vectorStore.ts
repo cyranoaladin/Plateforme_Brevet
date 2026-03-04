@@ -18,6 +18,9 @@ const QdrantPointSchema = z.object({
 
 const QdrantSearchResponseSchema = z.array(QdrantPointSchema);
 
+/**
+ * Codes d'erreurs normalisés pour le VectorStore.
+ */
 export type VectorStoreErrorCode = "TIMEOUT" | "BREAKER_OPEN" | "QDRANT_ERROR";
 
 // État du Circuit Breaker
