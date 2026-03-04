@@ -10,7 +10,7 @@ const envSchema = z.object({
   ARIA_LLM_PROVIDER: z.enum(["mock", "openai", "openrouter"]).default("mock"),
   ARIA_RERANK_PROVIDER: z.enum(["none", "llm"]).default("none"),
   
-  // Security
+  // Security - Min 16 chars for robust hashing
   SALT: z.string().min(16).optional(), // Obligatoire en prod via validateEnv
   
   // API Keys
