@@ -1,4 +1,4 @@
-import { UserStats, DuelMatch } from "@/types/game";
+import { DuelMatch } from "@/types/game";
 import { Question } from "@/types/curriculum";
 import { NotionWithSubject } from "./questEngine";
 
