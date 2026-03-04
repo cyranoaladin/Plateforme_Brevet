@@ -44,6 +44,7 @@ export class OpenAIProvider implements ILlmProvider {
 
 export class MockProvider implements ILlmProvider {
   async generate(_messages: LlmMessage[]): Promise<LlmResponse> {
+    void _messages; // Explicitly mark as used for linting compliance
     await new Promise(r => setTimeout(r, 800));
     return { text: "Ceci est une réponse de test. [Source:1]" };
   }

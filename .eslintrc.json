@@ -3,7 +3,12 @@
   "rules": {
     "react/no-unescaped-entities": "error",
     "@typescript-eslint/no-explicit-any": "error",
-    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
-    "prefer-const": "error"
+    "prefer-const": "error",
+    "@typescript-eslint/no-unused-vars": ["error", { 
+      "argsIgnorePattern": "^_", 
+      "varsIgnorePattern": "^_",
+      "args": "after-used",
+      "ignoreRestSiblings": true
+    }]
   }
 }
