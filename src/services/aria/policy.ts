@@ -1,7 +1,7 @@
 import { AriaResponse, Citation, RetrievedChunk } from "./types";
 
 const REFUSAL_MSG = "Je ne trouve pas cette information dans les sources disponibles (Bulletin Officiel / Eduscol). Je préfère ne pas te dire d'erreurs !";
-const CITATION_REGEX = /\[Source:([\w-]+)\]/gi;
+const CITATION_REGEX = /\[Source:([\w-:]+)\]/gi;
 
 /**
  * Découpe le Markdown en unités informatives.
@@ -81,13 +81,15 @@ export function enforcePolicy(draftAnswer: string, retrievedChunks: RetrievedChu
   const citedIds = getAllMarkers(draftAnswer).filter(id => validIds.includes(id));
   const foundCitations: Citation[] = citedIds.map(id => {
     const chunk = retrievedChunks.find(c => c.id === id)!;
+    const meta = chunk.metadata as Record<string, unknown>;
+    
     return {
       chunkId: chunk.id,
-      source: String(chunk.metadata.sourceTitle || "Source Officielle"),
+      source: String(meta.sourceTitle || meta.sourceFile || "Source Officielle"),
       excerpt: getSmartExcerpt(chunk.text, query),
       relevance: Number(chunk.score),
-      pageNumber: chunk.metadata.pageNumber ? String(chunk.metadata.pageNumber) : undefined,
-      url: chunk.metadata.url ? String(chunk.metadata.url) : undefined
+      pageNumber: meta.pageNumber ? String(meta.pageNumber) : (meta.page ? String(meta.page) : undefined),
+      url: meta.url ? String(meta.url) : undefined
     };
   });
 
