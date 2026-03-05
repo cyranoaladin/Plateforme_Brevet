@@ -40,7 +40,7 @@ export function xpToNextRank(xp: number): { current: typeof RANK_THRESHOLDS[numb
 }
 
 // Server action : ajouter de l'XP avec vérification de rang
-export async function awardXp(userId: string, amount: number, reason: keyof typeof XP_REWARDS): Promise<{ newXp: number; rankUp: boolean; newRank?: typeof RANK_THRESHOLDS[number] }> {
+export async function awardXp(userId: string, amount: number, _reason: keyof typeof XP_REWARDS): Promise<{ newXp: number; rankUp: boolean; newRank?: typeof RANK_THRESHOLDS[number] }> {
   const { prisma } = await import("@/lib/prisma")
   
   const profile = await prisma.studentProfile.findUnique({ where: { userId } })

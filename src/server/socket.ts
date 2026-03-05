@@ -1,5 +1,4 @@
 import { Server as SocketIOServer } from "socket.io"
-import { type NextApiResponse } from "next"
 import { type Server as HTTPServer } from "http"
 import { auth } from "@/lib/auth"
 
@@ -93,7 +92,6 @@ export function initSocketServer(httpServer: HTTPServer) {
       const player = [room.player1, room.player2].find(p => p?.userId === userId)
       if (!player) return
       
-      const q = room.questions[questionIdx]
       // La correction est vérifiée côté serveur (jamais côté client !)
       // correctIndex doit être stocké dans la question côté serveur seulement
       // et NON envoyé au client dans la payload initiale
