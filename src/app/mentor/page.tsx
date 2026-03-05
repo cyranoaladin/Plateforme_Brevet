@@ -166,17 +166,27 @@ export default function MentorAriaPage() {
                 exit={{ opacity: 0 }}
                 className="space-y-4"
               >
-                {selectedCitations.map((cite, i) => (
-                  <div key={i} className="p-4 bg-background border border-surface-hover rounded-xl group hover:border-primary-500/50 transition-all">
-                    <p className="text-[10px] font-bold text-primary-400 mb-2 uppercase tracking-widest">{cite.source}</p>
-                    <p className="text-xs text-gray-400 italic leading-relaxed">&quot;{cite.excerpt}&quot;</p>
-                    <div className="mt-3 flex justify-end">
-                      <div className="h-1 w-full bg-surface-hover rounded-full overflow-hidden">
-                        <div className="h-full bg-primary-500" style={{ width: `${cite.relevance * 100}%` }} />
+                {[...selectedCitations]
+                  .sort((a, b) => b.relevance - a.relevance)
+                  .map((cite, i) => (
+                    <div key={i} className="p-4 bg-background border border-surface-hover rounded-xl group hover:border-primary-500/50 transition-all shadow-sm">
+                      <div className="flex justify-between items-start mb-2">
+                        <p className="text-[10px] font-bold text-primary-400 uppercase tracking-widest">{cite.source}</p>
+                        {cite.pageNumber && (
+                          <span className="text-[9px] bg-surface-hover text-gray-400 px-1.5 py-0.5 rounded font-mono">
+                            Page {cite.pageNumber}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-300 leading-relaxed italic mb-3">&quot;{cite.excerpt}&quot;</p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[8px] text-gray-500 uppercase font-bold tracking-tighter">Pertinence</span>
+                        <div className="h-1 w-24 bg-surface-hover rounded-full overflow-hidden">
+                          <div className="h-full bg-primary-500" style={{ width: `${cite.relevance * 100}%` }} />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </motion.div>
             ) : (
               <motion.div key="empty" className="text-center py-10 opacity-30">
