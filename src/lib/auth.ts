@@ -13,10 +13,6 @@ declare module "next-auth" {
       role: string
     } & DefaultSession["user"]
   }
-
-  interface User {
-    role: string
-  }
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -49,7 +45,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     session({ session, user }) {
       session.user.id = user.id
-      session.user.role = user.role
+      session.user.role = (user as any).role
       return session
     },
   },
