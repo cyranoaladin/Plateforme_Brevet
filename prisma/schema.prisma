@@ -1,0 +1,337 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── UTILISATEURS ─────────────────────────────────────────────────────────────
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  emailVerified   DateTime?
+  hashedPassword  String?
+  name            String?
+  avatarUrl       String?
+  role            UserRole  @default(STUDENT)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations Auth
+  accounts        Account[]
+  sessions        Session[]
+
+  // Relations Pédagogiques
+  profile         StudentProfile?
+  progress        SubjectProgress[]
+  questProgress   QuestProgress[]
+  badges          UserBadge[]
+  streaks         Streak?
+  duelHistory     DuelSession[]     @relation("DuelPlayer")
+  duelOpponent    DuelSession[]     @relation("DuelOpponent")
+  leaderboardEntries LeaderboardEntry[]
+  examSessions    ExamSession[]
+  parentId        String?
+  parent          User?             @relation("ParentChild", fields: [parentId], references: [id])
+  children        User[]            @relation("ParentChild")
+  teacherClasses  ClassRoom[]       @relation("TeacherClasses")
+  enrolledClasses ClassRoom[]       @relation("EnrolledStudents")
+  flashcards      Flashcard[]
+  flashcardReviews FlashcardReview[]
+
+  // RGPD
+  consentGiven    Boolean   @default(false)
+  consentDate     DateTime?
+  parentConsent   Boolean   @default(false)
+  parentConsentDate DateTime?
+  anonymizedId    String    @unique @default(cuid()) // Pour analytics anonymisées
+  
+  @@map("users")
+}
+
+enum UserRole {
+  STUDENT
+  PARENT
+  TEACHER
+  ADMIN
+}
+
+// ─── PROFIL ÉLÈVE ─────────────────────────────────────────────────────────────
+
+model StudentProfile {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Gamification
+  xp              Int       @default(0)
+  rank            Int       @default(1)
+  gems            Int       @default(0)
+  energy          Int       @default(30)
+  energyLastRefill DateTime @default(now())
+  
+  // Persona IA
+  ariaPersonality String    @default("coach") // sage|pote|coach|creatif|robot
+  
+  // Style d'apprentissage (détecté comportementalement)
+  learningStyle   String?   // visual|auditory|kinesthetic|reading
+  
+  // Objectifs
+  targetScore     Float?    // Note cible sur 20
+  examDate        DateTime? // Date du Brevet
+  prioritySubjects String[] // Matières prioritaires
+  
+  // Statistiques calculées
+  totalSessionTime Int      @default(0) // en minutes
+  longestStreak   Int       @default(0)
+  exercisesDone   Int       @default(0)
+  
+  // Prédicteur de score
+  predictedScore  Float?
+  predictedAt     DateTime?
+  
+  updatedAt       DateTime  @updatedAt
+  
+  @@map("student_profiles")
+}
+
+// ─── PROGRESSION PAR MATIÈRE ──────────────────────────────────────────────────
+
+model SubjectProgress {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectSlug String    // "maths" | "francais" | "histoire-geo" | etc.
+  chapterSlug String    // "algebre" | "geometrie" | etc.
+  notionSlug  String    // notion précise
+  mastery     Float     @default(0) // 0.0 - 1.0 (Bloom N1-N6)
+  bloomLevel  Int       @default(0) // Niveau Bloom atteint 0-6
+  irtTheta    Float     @default(0) // Estimation IRT du niveau
+  lastPracticed DateTime?
+  reviewCount Int       @default(0)
+  
+  // SM-2 (répétition espacée)
+  easeFactor  Float     @default(2.5)
+  interval    Int       @default(1) // jours avant prochaine révision
+  nextReview  DateTime  @default(now())
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  @@unique([userId, subjectSlug, chapterSlug, notionSlug])
+  @@map("subject_progress")
+}
+
+// ─── QUÊTES ───────────────────────────────────────────────────────────────────
+
+model QuestProgress {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questId     String
+  status      QuestStatus @default(IN_PROGRESS)
+  progress    Int       @default(0)
+  target      Int
+  completedAt DateTime?
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  
+  @@unique([userId, questId])
+  @@map("quest_progress")
+}
+
+enum QuestStatus {
+  IN_PROGRESS
+  COMPLETED
+  CLAIMED
+  EXPIRED
+}
+
+// ─── BADGES ───────────────────────────────────────────────────────────────────
+
+model UserBadge {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId   String
+  earnedAt  DateTime  @default(now())
+  isNew     Boolean   @default(true)
+  
+  @@unique([userId, badgeId])
+  @@map("user_badges")
+}
+
+// ─── STREAKS ──────────────────────────────────────────────────────────────────
+
+model Streak {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentStreak Int       @default(0)
+  longestStreak Int       @default(0)
+  lastActivityDate DateTime?
+  freezesLeft   Int       @default(2) // Streak freeze items
+  updatedAt     DateTime  @updatedAt
+  
+  @@map("streaks")
+}
+
+// ─── DUELS ────────────────────────────────────────────────────────────────────
+
+model DuelSession {
+  id            String    @id @default(cuid())
+  player1Id     String
+  player1       User      @relation("DuelPlayer", fields: [player1Id], references: [id])
+  player2Id     String?   // null = vs bot
+  player2       User?     @relation("DuelOpponent", fields: [player2Id], references: [id])
+  subjectSlug   String
+  status        DuelStatus @default(WAITING)
+  player1Score  Int       @default(0)
+  player2Score  Int       @default(0)
+  winnerId      String?
+  questions     Json      // Array of question IDs
+  answers       Json?     // Recorded answers
+  startedAt     DateTime?
+  endedAt       DateTime?
+  createdAt     DateTime  @default(now())
+  
+  @@map("duel_sessions")
+}
+
+enum DuelStatus {
+  WAITING
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+// ─── LEADERBOARD ──────────────────────────────────────────────────────────────
+
+model LeaderboardEntry {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  period      String    // "weekly" | "monthly" | "alltime"
+  xp          Int       @default(0)
+  rank        Int?
+  subjectSlug String?   // null = global
+  weekStart   DateTime? // Pour le classement hebdo
+  updatedAt   DateTime  @updatedAt
+  
+  @@unique([userId, period, subjectSlug, weekStart])
+  @@map("leaderboard_entries")
+}
+
+// ─── EXAMENS BLANCS ───────────────────────────────────────────────────────────
+
+model ExamSession {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        ExamType
+  score       Float?
+  maxScore    Float
+  details     Json      // Scores par matière, temps par question, etc.
+  feedback    String?   // Feedback ARIA post-examen
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  
+  @@map("exam_sessions")
+}
+
+enum ExamType {
+  MATHS
+  FRANCAIS
+  HISTOIRE_GEO
+  SCIENCES
+  FULL_DNB
+}
+
+// ─── FLASHCARDS (Répétition Espacée) ─────────────────────────────────────────
+
+model Flashcard {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectSlug String
+  front       String
+  back        String
+  tags        String[]
+  source      String?   // "rag" | "user" | "system"
+  reviews     FlashcardReview[]
+  createdAt   DateTime  @default(now())
+  
+  @@map("flashcards")
+}
+
+model FlashcardReview {
+  id          String    @id @default(cuid())
+  flashcardId String
+  flashcard   Flashcard @relation(fields: [flashcardId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating      Int       // 0-5 (SM-2 quality)
+  easeFactor  Float
+  interval    Int
+  nextReview  DateTime
+  reviewedAt  DateTime  @default(now())
+  
+  @@map("flashcard_reviews")
+}
+
+// ─── CLASSES ──────────────────────────────────────────────────────────────────
+
+model ClassRoom {
+  id          String    @id @default(cuid())
+  name        String
+  code        String    @unique // Code d'invitation 6 chars
+  teacherId   String
+  teacher     User      @relation("TeacherClasses", fields: [teacherId], references: [id])
+  students    User[]    @relation("EnrolledStudents")
+  school      String?
+  year        String    @default("3ème")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  @@map("classrooms")
+}
+
+// ─── AUTH (NextAuth) ──────────────────────────────────────────────────────────
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@id([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  sessionToken String    @unique
+  userId       String
+  expires      DateTime
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+  
+  @@id([identifier, token])
+  @@map("verification_tokens")
+}

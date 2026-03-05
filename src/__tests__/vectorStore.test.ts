@@ -34,7 +34,7 @@ describe('Reliability: VectorStoreService (High Speed)', () => {
     
     // On force un timeout très court pour la rapidité des tests
     process.env.QDRANT_TIMEOUT_MS = "30";
-    process.env.NODE_ENV = "test"; // Assurer le mode test pour les fallbacks
+    ;(process.env as any).NODE_ENV = "test" // Assurer le mode test pour les fallbacks
     
     // Import dynamique pour recharger le singleton failureCount et lire le nouvel env
     const mod = await import('../services/aria/vectorStore');
