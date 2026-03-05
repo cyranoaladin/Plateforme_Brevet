@@ -9,29 +9,36 @@ const COLLECTION_NAME = "aria_docs";
 const VECTOR_SIZE = 384;
 const SEARCH_TIMEOUT_MS = env.QDRANT_TIMEOUT_MS || 2500;
 
-// Schéma de validation runtime pour la réponse Qdrant
+/**
+ * Schéma de validation pour le payload Qdrant.
+ * On autorise des champs arbitraires pour la flexibilité du RAG.
+ */
 const QdrantPointSchema = z.object({
   id: z.union([z.string(), z.number()]),
   score: z.number(),
-  payload: z.record(z.string(), z.unknown()).optional(),
+  payload: z.object({
+    text: z.string(),
+    sourceTitle: z.string().optional(),
+    sourceFile: z.string().optional(),
+    page: z.number().optional(),
+    pageNumber: z.number().optional(),
+    docId: z.string().optional(),
+    chunkIndex: z.number().optional(),
+    subject: z.string().optional(),
+    year: z.number().optional(),
+    docType: z.string().optional(),
+  }).and(z.record(z.string(), z.unknown())).optional(),
 });
 
 const QdrantSearchResponseSchema = z.array(QdrantPointSchema);
 
-/**
- * Codes d'erreurs normalisés pour le VectorStore.
- */
 export type VectorStoreErrorCode = "TIMEOUT" | "BREAKER_OPEN" | "QDRANT_ERROR";
 
-// État du Circuit Breaker
 let failureCount = 0;
 let lastFailureTime = 0;
 const BREAKER_THRESHOLD = 3;
 const BREAKER_RESET_MS = 30000;
 
-/**
- * Helper de timeout générique.
- */
 async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   const timeout = new Promise<never>((_, reject) =>
     setTimeout(() => reject(new Error("TIMEOUT")), ms)
@@ -57,17 +64,13 @@ export class VectorStoreService {
     return false;
   }
 
+  /**
+   * Insère des chunks avec métadonnées flexibles.
+   */
   static async upsertChunks(chunks: Array<{
     id: string;
     text: string;
-    sourceTitle?: string;
-    subject: string;
-    notionId?: string;
-    year: number;
-    docType: string;
-    level?: string;
-    pageNumber?: number;
-    pageRange?: string;
+    metadata: Record<string, unknown>;
   }>) {
     try {
       const collections = await this.client.getCollections();
@@ -83,14 +86,7 @@ export class VectorStoreService {
         vector: await generateLocalEmbedding(chunk.text),
         payload: {
           text: chunk.text,
-          sourceTitle: chunk.sourceTitle,
-          subject: chunk.subject,
-          notionId: chunk.notionId,
-          year: chunk.year,
-          docType: chunk.docType,
-          level: chunk.level || "3e",
-          pageNumber: chunk.pageNumber,
-          pageRange: chunk.pageRange
+          ...chunk.metadata
         }
       })));
 
@@ -115,10 +111,7 @@ export class VectorStoreService {
         with_payload: true,
       });
 
-      // 1. Race avec timeout (renvoie unknown)
       const rawResults = await withTimeout(searchPromise, SEARCH_TIMEOUT_MS);
-
-      // 2. Validation Runtime via Zod
       const validation = QdrantSearchResponseSchema.safeParse(rawResults);
       
       if (!validation.success) {
@@ -128,7 +121,6 @@ export class VectorStoreService {
       }
 
       const results = validation.data;
-
       if (failureCount > 0) failureCount--;
 
       return {
@@ -143,12 +135,9 @@ export class VectorStoreService {
     } catch (e: unknown) {
       failureCount++;
       lastFailureTime = Date.now();
-      
       const message = e instanceof Error ? e.message : String(e);
       const errorCode: VectorStoreErrorCode = message === "TIMEOUT" ? "TIMEOUT" : "QDRANT_ERROR";
-      
       logger.error(`[VECTOR STORE ISSUE] ${errorCode}`, { count: failureCount, message });
-      
       return { chunks: [], error: errorCode };
     }
   }

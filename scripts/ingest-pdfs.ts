@@ -71,10 +71,11 @@ async function main() {
       await VectorStoreService.upsertChunks(allProcessedChunks.map(c => ({
         id: c.id,
         text: c.text,
-        sourceTitle: c.metadata.sourceFile,
-        subject: c.metadata.subject || 'general',
-        year: 2026,
-        docType: 'pdf_ingestion'
+        metadata: {
+          ...c.metadata,
+          year: 2026,
+          docType: 'pdf_ingestion'
+        }
       })));
       console.log("⭐ Upsert successful!");
     } catch (err) {
