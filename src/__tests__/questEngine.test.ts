@@ -30,7 +30,9 @@ describe('Quest Engine', () => {
     energy: 30,
     lastSync: "",
     streakDays: 2,
-    mastery: { "thales": 20, "pythagore": 50 }
+    mastery: { "thales": 20, "pythagore": 50 },
+    history: [],
+    duels: [],
   };
 
   it('should generate exactly 3 daily quests', () => {

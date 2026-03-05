@@ -17,7 +17,8 @@ describe('Stats Engine: StatsSelector', () => {
     lastSync: "",
     streakDays: 5,
     mastery: { 'n1': 20, 'n2': 90 },
-    history: []
+    history: [],
+    duels: [],
   };
 
   it('should calculate subject mastery correctly', () => {
