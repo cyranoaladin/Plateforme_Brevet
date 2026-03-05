@@ -55,6 +55,14 @@ Pour enrichir la base de connaissances du Mentor ARIA :
 3. Les documents sont automatiquement découpés en chunks et stockés dans la base vectorielle Qdrant (si `ARIA_MODE=rag`).
    - Options : `--dir <path>`, `--dry-run`, `--chunk-size <int>`, `--overlap <int>`.
 
+## 🛠️ Quickstart RAG (Environnement Local)
+
+Pour tester le pipeline complet avec Qdrant :
+1.  **Lancer Qdrant** : `docker compose up -d`
+2.  **Configuration** : S'assurer que `.env.local` contient `ARIA_MODE=rag` et `QDRANT_URL=http://localhost:6333`.
+3.  **Ingestion** : `npm run ingest:pdf` (après avoir ajouté des PDF dans `data/pdfs/`).
+4.  **Vérification** : `node scripts/verify-rag.mjs` (le serveur Next.js doit être lancé).
+
 ## 🧪 Qualité & Fiabilité
 
 Le projet applique des barrières de qualité strictes :
