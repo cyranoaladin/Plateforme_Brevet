@@ -6,17 +6,49 @@ import { chunkText } from '../src/services/ingestion/chunker';
 import { VectorStoreService } from '../src/services/aria/vectorStore';
 import { IngestionChunk } from '../src/services/ingestion/types';
 
-// Mock/Stub pour les env vars si exécuté hors Next.js
-process.env.ARIA_MODE = process.env.ARIA_MODE || 'mock';
+// Defaults
+const DEFAULT_CHUNK_SIZE = 1000;
+const DEFAULT_OVERLAP = 200;
+const DEFAULT_DIR = 'data/pdfs';
+
+function showHelp() {
+  console.log(`
+🚀 ARIA PDF Ingestor CLI
+Usage: npm run ingest:pdf -- [options]
+
+Options:
+  --dir <path>        Directory to scan for PDFs (default: ${DEFAULT_DIR})
+  --chunk-size <num>  Characters per chunk (default: ${DEFAULT_CHUNK_SIZE})
+  --overlap <num>     Characters overlap between chunks (default: ${DEFAULT_OVERLAP})
+  --dry-run           Perform extraction and local saving without Qdrant upsert
+  --help              Show this help message
+  `);
+}
 
 async function main() {
   const args = process.argv.slice(2);
-  const dir = args.includes('--dir') ? args[args.indexOf('--dir') + 1] : 'data/pdfs';
-  const dryRun = args.includes('--dry-run');
-  const chunkSize = parseInt(args.includes('--chunk-size') ? args[args.indexOf('--chunk-size') + 1] : '1000');
-  const overlap = parseInt(args.includes('--overlap') ? args[args.indexOf('--overlap') + 1] : '200');
+  
+  if (args.includes('--help')) {
+    showHelp();
+    return;
+  }
 
-  console.log(`📂 Scanning directory: ${dir}`);
+  const dir = args.includes('--dir') ? args[args.indexOf('--dir') + 1] : DEFAULT_DIR;
+  const dryRun = args.includes('--dry-run');
+  const chunkSize = parseInt(args.includes('--chunk-size') ? args[args.indexOf('--chunk-size') + 1] : DEFAULT_CHUNK_SIZE.toString());
+  const overlap = parseInt(args.includes('--overlap') ? args[args.indexOf('--overlap') + 1] : DEFAULT_OVERLAP.toString());
+
+  // Validations
+  if (isNaN(chunkSize) || chunkSize <= 0) {
+    console.error("❌ Error: --chunk-size must be a positive number.");
+    process.exit(1);
+  }
+  if (isNaN(overlap) || overlap < 0 || overlap >= chunkSize) {
+    console.error("❌ Error: --overlap must be >= 0 and < chunk-size.");
+    process.exit(1);
+  }
+
+  console.log(`📂 Scanning: ${path.resolve(dir)}`);
   
   if (!fs.existsSync(dir)) {
     console.error(`❌ Directory not found: ${dir}`);
@@ -27,14 +59,18 @@ async function main() {
   console.log(`🔍 Found ${files.length} PDF files.`);
 
   const allProcessedChunks: IngestionChunk[] = [];
+  let hasFailures = false;
 
   for (const file of files) {
     const filePath = path.join(dir, file);
-    const docId = crypto.createHash('sha256').update(file).digest('hex').substring(0, 12);
     
-    console.log(`📄 Processing: ${file} (ID: ${docId})`);
-
     try {
+      // Deterministic DocId from file content
+      const buffer = fs.readFileSync(filePath);
+      const docId = crypto.createHash('sha256').update(buffer).digest('hex').substring(0, 16);
+      
+      console.log(`📄 Processing: ${file} (Content ID: ${docId})`);
+
       const { pages } = await PDFExtractor.extract(filePath);
       
       pages.forEach((pageText, index) => {
@@ -48,25 +84,30 @@ async function main() {
         allProcessedChunks.push(...chunks);
       });
 
-      console.log(`✅ Processed ${pages.length} pages, total ${allProcessedChunks.filter(c => c.metadata.docId === docId).length} chunks.`);
+      console.log(`   ✅ Extracted ${pages.length} pages, ${allProcessedChunks.filter(c => c.metadata.docId === docId).length} total chunks.`);
     } catch (err) {
-      console.error(`❌ Failed to process ${file}:`, err instanceof Error ? err.message : String(err));
+      console.error(`   ❌ FAILED to process ${file}:`, err instanceof Error ? err.message : String(err));
+      hasFailures = true;
     }
   }
 
   if (allProcessedChunks.length === 0) {
-    console.warn("⚠️ No chunks extracted. Exiting.");
+    console.warn("⚠️ No chunks extracted.");
+    if (hasFailures) process.exit(1);
     return;
   }
 
-  // Debug Output
+  // Save local debug JSON
   const outputDir = 'data/ingestion';
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
-  fs.writeFileSync(path.join(outputDir, 'output.json'), JSON.stringify(allProcessedChunks, null, 2));
-  console.log(`💾 Debug output written to ${outputDir}/output.json`);
+  const outputPath = path.join(outputDir, 'output.json');
+  fs.writeFileSync(outputPath, JSON.stringify(allProcessedChunks, null, 2));
+  console.log(`💾 Local backup saved to ${outputPath}`);
 
   // Vector Store Upsert
-  if (process.env.ARIA_MODE === 'rag' && !dryRun) {
+  const isRagEnabled = process.env.ARIA_MODE === 'rag';
+  
+  if (isRagEnabled && !dryRun) {
     console.log(`🚀 Upserting ${allProcessedChunks.length} chunks to Qdrant...`);
     try {
       await VectorStoreService.upsertChunks(allProcessedChunks.map(c => ({
@@ -80,11 +121,17 @@ async function main() {
       })));
       console.log("⭐ Upsert successful!");
     } catch (err) {
-      console.error("❌ Qdrant Upsert Failed:", err);
+      console.error("❌ Qdrant Upsert FAILED:", err);
       process.exit(1);
     }
   } else {
-    console.log(`ℹ️ ARIA_MODE is '${process.env.ARIA_MODE}' or --dry-run active. Skipping Qdrant upsert.`);
+    const reason = dryRun ? "--dry-run active" : `ARIA_MODE is '${process.env.ARIA_MODE}'`;
+    console.log(`ℹ️ skipping Qdrant upsert (${reason}).`);
+  }
+
+  if (hasFailures) {
+    console.warn("\n⚠️ Some files failed during the process. Check the logs above.");
+    process.exit(1);
   }
 }
 
