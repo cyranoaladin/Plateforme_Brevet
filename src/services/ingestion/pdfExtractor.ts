@@ -1,5 +1,4 @@
 import fs from 'fs';
-// @ts-expect-error: pdf-parse has no official types for ESM default import
 import pdf from 'pdf-parse';
 
 export interface PDFData {
