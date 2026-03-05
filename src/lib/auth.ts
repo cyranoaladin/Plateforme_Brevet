@@ -1,7 +1,7 @@
 import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import Credentials from "next-auth/providers/credentials"
-import { PrismaAdapter } from "next-auth/adapters"
+import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import { comparePassword } from "@/lib/crypto"
 import { DefaultSession } from "next-auth"
@@ -45,7 +45,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     session({ session, user }) {
       session.user.id = user.id
-      session.user.role = (user as { role: string }).role
+      session.user.role = (user as unknown as { role: string }).role
       return session
     },
   },
