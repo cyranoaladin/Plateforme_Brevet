@@ -41,5 +41,3 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 \n# Ingestion data\ndata/pdfs/*\n!data/pdfs/.gitkeep\ndata/ingestion/*\n!data/ingestion/.gitkeep
-
-/src/generated/prisma

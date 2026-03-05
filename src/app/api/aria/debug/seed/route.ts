@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { VectorStoreService } from "@/services/aria/vectorStore";
+import { env } from "@/config/env";
 
 export async function POST() {
+  if (env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Not Found" }, { status: 404 });
+  }
+
   try {
     const fakeChunks = [
       {

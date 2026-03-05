@@ -39,12 +39,7 @@ describe('Stats: XP History Logic', () => {
 
   it('StatsSelector.getXPProgress should return 7 latest sorted points', () => {
     const stats: UserStats = {
-      xp: 1000, 
-      gems: 0, 
-      energy: 0, 
-      lastSync: "", 
-      streakDays: 0, 
-      mastery: {},
+      xp: 1000, gems: 0, energy: 0, lastSync: "", streakDays: 0, mastery: {},
       history: [
         { date: '2026-03-05', xp: 500 },
         { date: '2026-03-01', xp: 100 },
@@ -54,8 +49,7 @@ describe('Stats: XP History Logic', () => {
         { date: '2026-03-06', xp: 600 },
         { date: '2026-03-07', xp: 700 },
         { date: '2026-03-08', xp: 800 },
-      ],
-      duels: [],
+      ]
     };
 
     const progress = StatsSelector.getXPProgress(stats);

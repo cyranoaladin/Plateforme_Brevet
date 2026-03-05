@@ -61,7 +61,7 @@ Pour tester le pipeline complet avec Qdrant :
 1.  **Lancer Qdrant** : `docker compose up -d`
 2.  **Configuration** : S'assurer que `.env.local` contient `ARIA_MODE=rag` et `QDRANT_URL=http://localhost:6333`.
 3.  **Ingestion** : `npm run ingest:pdf` (après avoir ajouté des PDF dans `data/pdfs/`).
-4.  **Vérification** : `node scripts/verify-rag.mjs` (le serveur Next.js doit être lancé).
+4.  **Vérification End-to-End** : `npm run smoke:rag` (démarre Qdrant, simule l'ingestion, lance la production et vérifie les citations).
 
 ## 🧪 Qualité & Fiabilité
 
