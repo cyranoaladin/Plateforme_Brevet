@@ -37,4 +37,16 @@ describe('Ingestion: Chunker Logic', () => {
     expect(chunks).toEqual([]);
   });
 
+  it('should generate unique IDs including page number', () => {
+    const text = "Some text for page 1";
+    const meta1 = { docId: 'doc1', sourceFile: 'file.pdf', page: 1 };
+    const meta2 = { docId: 'doc1', sourceFile: 'file.pdf', page: 2 };
+    
+    const chunks1 = chunkText(text, { chunkSize: 100, overlap: 0 }, meta1);
+    const chunks2 = chunkText(text, { chunkSize: 100, overlap: 0 }, meta2);
+    
+    expect(chunks1[0].id).toBe("doc1:1:0");
+    expect(chunks2[0].id).toBe("doc1:2:0");
+  });
+
 });

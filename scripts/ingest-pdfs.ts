@@ -35,21 +35,22 @@ async function main() {
     console.log(`📄 Processing: ${file} (ID: ${docId})`);
 
     try {
-      const { text } = await PDFExtractor.extract(filePath);
-      // Pour ce MVP, on traite le document comme une page unique ou on simule les pages si possible
-      // pdf-parse ne donne pas facilement les délimitations de page dans le texte brut
-      const chunks = chunkText(text, { chunkSize, overlap }, {
-        docId,
-        sourceFile: file,
-        page: 1,
-        subject: 'general'
+      const { pages } = await PDFExtractor.extract(filePath);
+      
+      pages.forEach((pageText, index) => {
+        const pageNumber = index + 1;
+        const chunks = chunkText(pageText, { chunkSize, overlap }, {
+          docId,
+          sourceFile: file,
+          page: pageNumber,
+          subject: 'general'
+        });
+        allProcessedChunks.push(...chunks);
       });
 
-      allProcessedChunks.push(...chunks);
-      console.log(`✅ Extracted ${chunks.length} chunks.`);
+      console.log(`✅ Processed ${pages.length} pages, total ${allProcessedChunks.filter(c => c.metadata.docId === docId).length} chunks.`);
     } catch (err) {
       console.error(`❌ Failed to process ${file}:`, err instanceof Error ? err.message : String(err));
-      // On continue avec les autres fichiers
     }
   }
 
