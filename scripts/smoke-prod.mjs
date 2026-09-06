@@ -1,7 +1,20 @@
 import { spawn, execSync } from 'child_process';
 import waitOn from 'wait-on';
+import nextEnv from '@next/env'; // CommonJS module: no named exports under Node's ESM loader
+const { loadEnvConfig } = nextEnv;
 
 const isWindows = process.platform === 'win32';
+
+// This plain `node scripts/smoke-prod.mjs` process never gets Next.js's
+// own .env-file loading for free - only `next dev`/`build`/`start`
+// (spawned below as children) do that themselves. Without this, a
+// developer who followed the documented `cp .env.example .env` setup and
+// put NEXTAUTH_SECRET there would still see this script refuse to start:
+// process.env.NEXTAUTH_SECRET would be unset in THIS process even though
+// the child `next start` would have picked it up fine on its own. Uses
+// Next's own loader (`@next/env`, a real dependency of `next` itself) so
+// this follows exactly the same env files, in the same order, as the app.
+loadEnvConfig(process.cwd());
 
 const PORT = process.env.PORT || 3000;
 const SALT = process.env.SALT || "dev-salt-min-32-chars-xxxxxxxxxxxxxxxx";
@@ -11,10 +24,10 @@ const AUTH_PROBE_TIMEOUT_MS = 5000;
 
 // Required, no fallback (unlike SALT above): the whole point of the auth
 // probe below is to catch a missing NEXTAUTH_SECRET in whatever
-// environment runs this script (CI, a deploy pipeline, ...). Silently
-// substituting a working value here - like SALT does, for convenience on
-// an uninstrumented local machine - would make that check permanently
-// unable to fail, defeating its purpose.
+// environment runs this script (CI, a deploy pipeline, an uninstrumented
+// local .env, ...). Silently substituting a working value here - like
+// SALT does, for convenience - would make that check permanently unable
+// to fail, defeating its purpose.
 const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET;
 if (!NEXTAUTH_SECRET) {
   console.error('❌ NEXTAUTH_SECRET is not set. Refusing to run smoke:prod: the auth-guard check below only proves production auth is configured if this is genuinely provided by the caller, not defaulted here.');

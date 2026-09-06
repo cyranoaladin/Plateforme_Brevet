@@ -38,7 +38,18 @@ case $COMMAND in
       # running, so this works even right after `down`.
       project_name="$(node -e 'process.stdout.write(JSON.parse(require("child_process").execSync(process.argv[1]+" config --format json")).name)' "$COMPOSE")"
       $COMPOSE down qdrant
-      docker volume rm "${project_name}_qdrant_storage" >/dev/null 2>&1 || true
+      # Only a genuinely-already-gone volume is fine to ignore here ("no
+      # such volume": e.g. this is the very first reset, before the volume
+      # was ever created). Any other failure (permission denied, volume
+      # still in use, daemon error, ...) must stop the script and be shown
+      # - silently swallowing it would let this report "nettoyé" and
+      # restart Qdrant on data that was never actually wiped.
+      rm_output="$(docker volume rm "${project_name}_qdrant_storage" 2>&1)" && rm_status=0 || rm_status=$?
+      if [ "$rm_status" -ne 0 ] && ! echo "$rm_output" | grep -qi "no such volume"; then
+        echo "❌ Échec de la suppression du volume qdrant_storage :"
+        echo "$rm_output"
+        exit 1
+      fi
       echo "✅ Storage nettoyé."
       $COMPOSE up -d qdrant
     fi
