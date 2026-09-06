@@ -7,7 +7,7 @@ services:
     # over the private brevet-internal network (http://qdrant:6333).
     # Do not add a "ports:" mapping here without a documented operational need.
     volumes:
-      - ./qdrant_storage:/qdrant/storage
+      - qdrant_storage:/qdrant/storage
     networks:
       - brevet-internal
     logging:
@@ -60,6 +60,7 @@ services:
 
 volumes:
   brevet_data:
+  qdrant_storage:
 
 networks:
   brevet-internal:
