@@ -36,8 +36,9 @@ function validateEnv() {
 
   const data = result.data;
 
-  // Règle de Sécurité P0 : Fail fast en production sans SALT
-  if (data.NODE_ENV === 'production' && !data.SALT) {
+  // Règle de Sécurité P0 : Fail fast en production sans SALT (hors phase de build)
+  const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build' || process.env.npm_lifecycle_event === 'build';
+  if (data.NODE_ENV === 'production' && !data.SALT && !isBuildPhase) {
     throw new Error("❌ SECURITY CRITICAL: SALT environment variable is missing in production.");
   }
 

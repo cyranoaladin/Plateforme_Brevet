@@ -43,6 +43,6 @@ describe('Security: Logger Redaction', () => {
 describe('Security: Env SALT Validation', () => {
   it('should have a SALT of at least 16 chars', async () => {
     const { env } = await import('../config/env');
-    expect(env.SALT.length).toBeGreaterThanOrEqual(16);
+    expect(env.SALT?.length ?? 0).toBeGreaterThanOrEqual(16);
   });
 });

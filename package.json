@@ -20,14 +20,14 @@
     "clsx": "^2.1.1",
     "framer-motion": "^12.35.0",
     "lucide-react": "^0.577.0",
-    "next": "16.1.6",
-    "next-auth": "^4.24.13",
+    "next": "16.3.4",
+    "next-auth": "^4.24.15",
     "pdf-parse": "^2.4.5",
+    "prisma": "^6.19.2",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "tailwind-merge": "^3.5.0",
-    "tsx": "^4.21.0",
-    "uuid": "^13.0.0",
+    "uuid": "^13.0.2",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -42,12 +42,12 @@
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^5.1.4",
     "eslint": "^9",
-    "eslint-config-next": "16.1.6",
+    "eslint-config-next": "16.3.4",
     "jsdom": "^28.1.0",
-    "prisma": "^6.19.2",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5",
     "vitest": "^4.0.18",
-    "wait-on": "^9.0.4"
+    "wait-on": "^9.1.0"
   }
 }
