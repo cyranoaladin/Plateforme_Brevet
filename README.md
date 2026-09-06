@@ -60,19 +60,19 @@ Pour enrichir la base de connaissances du Mentor ARIA :
 ## 🛠️ Quickstart RAG (Environnement Local)
 
 Pour tester le pipeline complet avec Qdrant :
-1.  **Lancer Qdrant** : `docker compose up -d qdrant` — publie Qdrant sur `127.0.0.1:6333` via `docker-compose.override.yml` (chargé automatiquement en local). Ne cible que le service `qdrant` : un `docker compose up -d` sans argument démarre aussi le service `app`, qui occupe le port 3010 utilisé par `next dev`/`next start` ci-dessous.
+1.  **Lancer Qdrant** : `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d qdrant` — publie Qdrant sur `127.0.0.1:6333` via `docker-compose.dev.yml`. Ce fichier doit être nommé explicitement (il n'est PAS auto-chargé comme le serait un `docker-compose.override.yml` classique) : l'exposition de Qdrant sur l'hôte est un opt-in volontaire, jamais le comportement par défaut d'un `docker compose up -d` nu — y compris en production. Ne cible que le service `qdrant` : le service `app` occupe le port 3010 utilisé par `next dev`/`next start` ci-dessous.
 2.  **Configuration** : S'assurer que `.env` contient `ARIA_MODE=rag` et `QDRANT_URL=http://localhost:6333`.
 3.  **Ingestion** : `npm run ingest:pdf` (après avoir ajouté des PDF dans `data/pdfs/`).
 4.  **Vérification End-to-End** : `npm run smoke:rag` (démarre Qdrant, simule l'ingestion, lance la production et vérifie les citations).
 
 ### Déploiement (production / CI)
 
-`docker-compose.override.yml` est réservé au développement local : il publie le port Qdrant sur l'hôte, ce qu'une production ne doit jamais faire. En production/CI, excluez-le explicitement :
+Un `docker compose up -d` nu (sans `-f`) ne charge que `docker-compose.yml` : Qdrant n'est alors jamais publié sur l'hôte, quel que soit l'opérateur qui lance la commande — c'est le comportement par défaut, pas une option à retenir.
 ```bash
-cp .env.example .env   # puis renseigner SALT et les clés nécessaires
-docker compose -f docker-compose.yml up -d
+cp .env.example .env   # puis renseigner SALT, NEXTAUTH_SECRET et les clés nécessaires
+docker compose up -d
 ```
-(ou `export COMPOSE_FILE=docker-compose.yml`). Qdrant n'est alors joignable que depuis le service `app`, sur le réseau interne `brevet-internal` (`http://qdrant:6333`).
+Qdrant n'est alors joignable que depuis le service `app`, sur le réseau interne `brevet-internal` (`http://qdrant:6333`). Ne jamais ajouter `-f docker-compose.dev.yml` sur un hôte de production.
 
 ## 🧪 Qualité & Fiabilité
 

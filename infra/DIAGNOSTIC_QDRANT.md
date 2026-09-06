@@ -9,11 +9,11 @@ Si Mentor ARIA renvoie des messages de type "Sources indisponibles", suivez ces 
 S'il n'est pas "Up", relancez-le : `./scripts/dev/qdrant.sh start`.
 
 ## 2. Tester l'API REST
-Ouvrez `http://localhost:6333/readyz` dans votre navigateur ou via curl :
+Ouvrez `http://localhost:6333/readyz` dans votre navigateur ou via curl (nécessite `./scripts/dev/qdrant.sh start`, qui publie ce port pour le dev local) :
 ```bash
 curl http://localhost:6333/readyz
 ```
-Réponse attendue : `all good`.
+Réponse attendue : `all shards are ready` (vérifié contre `qdrant/qdrant:v1.11.0`, la version utilisée par docker-compose.yml).
 
 ## 3. Consulter les logs d'erreurs
 ```bash

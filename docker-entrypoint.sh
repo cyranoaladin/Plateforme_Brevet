@@ -19,9 +19,18 @@ set -e
 # with the target command running as nextjs - there is no root parent left
 # afterwards to compromise.
 if [ "$(id -u)" = "0" ]; then
-  current_owner="$(stat -c '%u:%g' /app/data 2>/dev/null || echo unknown)"
-  if [ "$current_owner" != "1001:1001" ]; then
-    echo "[entrypoint] /app/data is owned by $current_owner, expected 1001:1001 - repairing..."
+  # Checks every entry under /app/data, not just the directory itself:
+  # the directory can already be 1001:1001 (e.g. freshly created by the
+  # image, or already repaired) while a file inside it - brevet.sqlite
+  # itself - is still root-owned, e.g. left over from a run that created
+  # the DB file directly as root before this repair step existed. `find
+  # -quit` stops at the first mismatch, so this stays a cheap stat walk
+  # (no chown) on the common case where everything already matches.
+  # BusyBox find (this image's /usr/bin/find) has no -uid/-gid - only
+  # -user/-group, which do accept a numeric id.
+  mismatch="$(find /app/data ! \( -user 1001 -a -group 1001 \) -print -quit 2>/dev/null)"
+  if [ -n "$mismatch" ]; then
+    echo "[entrypoint] /app/data contains entries not owned by 1001:1001 (e.g. $mismatch) - repairing..."
     chown -R 1001:1001 /app/data
   fi
   exec su-exec nextjs "$0" "$@"

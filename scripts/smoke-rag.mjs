@@ -2,10 +2,19 @@ import { spawn, execSync } from 'child_process';
 import waitOn from 'wait-on';
 import fs from 'fs';
 
+const isWindows = process.platform === 'win32';
+
 const PORT = process.env.PORT || 3010;
 const URL = `http://localhost:${PORT}/api/health`;
 const SEED_URL = `http://localhost:${PORT}/api/aria/debug/seed`;
 const QUERY_URL = `http://localhost:${PORT}/api/mentor/query`;
+
+// docker-compose.dev.yml is deliberately NOT named
+// docker-compose.override.yml (Compose's auto-merge convention): host
+// exposure of Qdrant must be an explicit opt-in, not a default that a bare
+// `docker compose ...` would also apply in production. So it must be
+// named on every invocation here.
+const COMPOSE_FILES = '-f docker-compose.yml -f docker-compose.dev.yml';
 
 console.log(`🚀 Starting RAG E2E smoke test...`);
 
@@ -24,13 +33,16 @@ let devProcess;
 function killProcessTree(child) {
   if (!child || child.killed) return;
   try {
-    if (process.platform === 'win32') {
-      child.kill();
+    if (isWindows) {
+      // /T recurses into the whole process tree rooted at this pid, /F
+      // forces termination - `child.kill()` alone only signals the top
+      // shell process here too, same underlying issue as the POSIX branch.
+      execSync(`taskkill /PID ${child.pid} /T /F`, { stdio: 'ignore' });
     } else {
       process.kill(-child.pid, 'SIGTERM');
     }
   } catch {
-    // Process group already gone - nothing to clean up.
+    // Process (group) already gone - nothing to clean up.
   }
 }
 
@@ -42,10 +54,11 @@ async function runTest() {
     // publishes host port 3010 - the exact port this script's own `next
     // dev`/`next start` servers bind to below - causing the dev server to
     // fail to bind and/or the health-wait to hit the wrong (production)
-    // container. docker-compose.override.yml additionally publishes
-    // Qdrant on 127.0.0.1:6333 for this host-side wait/query to reach it.
+    // container. docker-compose.dev.yml additionally publishes Qdrant on
+    // 127.0.0.1:6333 for this host-side wait/query to reach it (must be
+    // named explicitly - see COMPOSE_FILES above).
     console.log('📦 Starting Qdrant via docker compose...');
-    execSync('docker compose up -d qdrant', { stdio: 'inherit' });
+    execSync(`docker compose ${COMPOSE_FILES} up -d qdrant`, { stdio: 'inherit' });
 
     console.log('⏳ Waiting for Qdrant to be ready...');
     await waitOn({
@@ -66,7 +79,7 @@ async function runTest() {
         QDRANT_URL: 'http://localhost:6333'
       },
       shell: true,
-      detached: process.platform !== 'win32'
+      detached: !isWindows
     });
 
     await waitOn({
@@ -114,7 +127,7 @@ async function runTest() {
         QDRANT_URL: 'http://localhost:6333'
       },
       shell: true,
-      detached: process.platform !== 'win32'
+      detached: !isWindows
     });
 
     await waitOn({
@@ -180,7 +193,14 @@ async function runTest() {
     killProcessTree(devProcess);
     killProcessTree(nextProcess);
     try {
-      execSync('docker compose down', { stdio: 'inherit' });
+      // Scoped to "qdrant": an unqualified `docker compose down` tears
+      // down every container/network in the project, including an "app"
+      // service that may have already been running (e.g. a developer's
+      // own `docker compose up -d`) before this script started - this
+      // script only ever started "qdrant" (step 1 above), so cleanup must
+      // not touch anything else. Compose leaves the shared network alone
+      // when another service is still using it (logged, non-fatal).
+      execSync(`docker compose ${COMPOSE_FILES} down qdrant`, { stdio: 'inherit' });
     } catch(e) {}
   }
 }

@@ -106,8 +106,13 @@ export class VectorStoreService {
         vector: await generateLocalEmbedding(chunk.text),
         payload: {
           text: chunk.text,
-          chunkId: chunk.id,
-          ...chunk.metadata
+          // chunkId must win over anything with the same key in
+          // chunk.metadata (spread first, canonical field last): it is
+          // what search() relies on to recover the real, citable id (see
+          // toQdrantPointId above), so it must never be silently
+          // clobbered by caller-supplied metadata.
+          ...chunk.metadata,
+          chunkId: chunk.id
         }
       })));
 

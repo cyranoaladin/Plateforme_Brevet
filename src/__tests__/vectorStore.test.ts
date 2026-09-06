@@ -125,6 +125,18 @@ describe('Reliability: VectorStoreService (High Speed)', () => {
       expect(points[0].payload.chunkId).toBe('thales-1');
       expect(points[0].payload.subject).toBe('maths');
     });
+
+    it('never lets caller metadata clobber payload.chunkId, even if metadata itself has a "chunkId" key', async () => {
+      // Regression: chunkId used to be set BEFORE the ...metadata spread,
+      // so any caller-supplied metadata.chunkId silently overwrote the
+      // canonical one - breaking citation round-tripping in search().
+      await VectorStoreService.upsertChunks([
+        { id: 'real-id', text: 'chunk', metadata: { chunkId: 'attacker-or-accidental-value' } },
+      ]);
+
+      const { points } = upsertMock.mock.calls[0][1];
+      expect(points[0].payload.chunkId).toBe('real-id');
+    });
   });
 
   it('search() returns payload.chunkId as the chunk id when present (not Qdrant\'s internal UUID point id)', async () => {
