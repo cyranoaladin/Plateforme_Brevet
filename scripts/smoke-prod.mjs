@@ -1,28 +1,43 @@
-import { spawn } from 'child_process';
+import { spawn, execSync } from 'child_process';
 import waitOn from 'wait-on';
+
+const isWindows = process.platform === 'win32';
 
 const PORT = process.env.PORT || 3000;
 const SALT = process.env.SALT || "dev-salt-min-32-chars-xxxxxxxxxxxxxxxx";
-const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET || "dev-nextauth-secret-min-32-chars-xxxxx";
 const HEALTH_URL = `http://localhost:${PORT}/api/health`;
 const PROFILE_URL = `http://localhost:${PORT}/api/user/profile`;
+const AUTH_PROBE_TIMEOUT_MS = 5000;
+
+// Required, no fallback (unlike SALT above): the whole point of the auth
+// probe below is to catch a missing NEXTAUTH_SECRET in whatever
+// environment runs this script (CI, a deploy pipeline, ...). Silently
+// substituting a working value here - like SALT does, for convenience on
+// an uninstrumented local machine - would make that check permanently
+// unable to fail, defeating its purpose.
+const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET;
+if (!NEXTAUTH_SECRET) {
+  console.error('❌ NEXTAUTH_SECRET is not set. Refusing to run smoke:prod: the auth-guard check below only proves production auth is configured if this is genuinely provided by the caller, not defaulted here.');
+  process.exit(1);
+}
 
 console.log(`🚀 Starting production smoke test on port ${PORT}...`);
 
-// Voir scripts/smoke-rag.mjs pour le détail : { shell: true } ne renvoie
-// qu'un handle sur le process shell, pas sur `next start` lui-même (et ses
-// éventuels enfants) ; killProcessTree() cible tout le groupe de process
-// via son pid négatif plutôt que de fuiter un serveur sur PORT après coup.
+// { shell: true } returns a handle to the shell process only; `next start`
+// runs underneath it as a further descendant. child.kill() only signals
+// that top shell process, so it can leave a server listening on PORT after
+// this script exits. killProcessTree() targets the whole process group
+// (POSIX) or process tree (Windows) instead.
 function killProcessTree(child) {
   if (!child || child.killed) return;
   try {
-    if (process.platform === 'win32') {
-      child.kill();
+    if (isWindows) {
+      execSync(`taskkill /PID ${child.pid} /T /F`, { stdio: 'ignore' });
     } else {
       process.kill(-child.pid, 'SIGTERM');
     }
   } catch {
-    // Process group already gone - nothing to clean up.
+    // Process (group) already gone - nothing to clean up.
   }
 }
 
@@ -36,7 +51,7 @@ const child = spawn('npx', ['next', 'start', '-p', PORT.toString()], {
     NEXTAUTH_SECRET: NEXTAUTH_SECRET
   },
   shell: true, // Important pour la compatibilité npx sous Windows
-  detached: process.platform !== 'win32'
+  detached: !isWindows
 });
 
 let success = false;
@@ -65,9 +80,11 @@ async function runTest() {
     // missing - NextAuth then throws a generic 500 "MissingSecretError" on
     // the very first authenticated request instead of a clean 401. Hitting
     // a real protected route here (unauthenticated) is what actually
-    // proves the production auth configuration is complete.
+    // proves the production auth configuration is complete. A timeout is
+    // set explicitly so a hung route can't stop this script from ever
+    // reaching its cleanup/exit below.
     console.log(`🔒 Checking auth guard on ${PROFILE_URL} (expect 401, not 500)...`);
-    const profileResponse = await fetch(PROFILE_URL);
+    const profileResponse = await fetch(PROFILE_URL, { signal: AbortSignal.timeout(AUTH_PROBE_TIMEOUT_MS) });
     if (profileResponse.status !== 401) {
       console.error(`❌ Auth guard check failed: expected 401, got ${profileResponse.status}`);
       const body = await profileResponse.text();

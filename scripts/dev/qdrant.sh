@@ -28,8 +28,17 @@ case $COMMAND in
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
       # Qdrant persists to the named volume "qdrant_storage" (see
-      # docker-compose.yml), not a host bind mount - `-v` removes it.
-      $COMPOSE down -v qdrant
+      # docker-compose.yml), not a host bind mount. Whether a
+      # service-scoped `down -v <service>` actually removes a NAMED
+      # (non-anonymous) volume has been version-dependent across Compose
+      # v2 releases, so the volume is removed explicitly by its real,
+      # project-qualified name instead of relying on that flag alone -
+      # `docker compose config` resolves the actual project name (env var,
+      # `name:` field, or directory name) without needing any container
+      # running, so this works even right after `down`.
+      project_name="$(node -e 'process.stdout.write(JSON.parse(require("child_process").execSync(process.argv[1]+" config --format json")).name)' "$COMPOSE")"
+      $COMPOSE down qdrant
+      docker volume rm "${project_name}_qdrant_storage" >/dev/null 2>&1 || true
       echo "✅ Storage nettoyé."
       $COMPOSE up -d qdrant
     fi
