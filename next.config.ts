@@ -5,6 +5,16 @@ const nextConfig: NextConfig = {
   // en détectant des lockfiles parasites (ex: /home/alaeddine/package-lock.json).
   outputFileTracingRoot: __dirname,
 
+  // Ship only the traced runtime dependency subset in .next/standalone
+  // instead of the full node_modules tree, drastically shrinking the
+  // Docker runtime image (verified below: Prisma's query engine binary
+  // must be force-included since Next's file tracer doesn't discover it
+  // through static analysis).
+  output: "standalone",
+  outputFileTracingIncludes: {
+    "/**": ["./node_modules/.prisma/client/**/*"],
+  },
+
   images: {
     remotePatterns: [
       {

@@ -13,7 +13,13 @@ const envSchema = z.object({
   
   // Security - Min 16 chars for robust hashing
   SALT: z.string().min(16).optional(), // Obligatoire en prod via validateEnv
-  
+
+  // NextAuth requires this to sign session JWTs/cookies. Without it,
+  // NextAuth throws its own generic "server configuration" 500 in
+  // production (MissingSecretError) instead of the clear, actionable error
+  // validateEnv() below gives for the equivalent SALT case.
+  NEXTAUTH_SECRET: z.string().min(32).optional(), // Obligatoire en prod via validateEnv
+
   // API Keys
   OPENAI_API_KEY: z.string().optional(),
   OPENROUTER_API_KEY: z.string().optional(),
@@ -36,19 +42,27 @@ function validateEnv() {
 
   const data = result.data;
 
-  // Règle de Sécurité P0 : Fail fast en production sans SALT
-  if (data.NODE_ENV === 'production' && !data.SALT) {
+  // Règle de Sécurité P0 : Fail fast en production sans SALT (hors phase de build)
+  const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build' || process.env.npm_lifecycle_event === 'build';
+  if (data.NODE_ENV === 'production' && !data.SALT && !isBuildPhase) {
     throw new Error("❌ SECURITY CRITICAL: SALT environment variable is missing in production.");
+  }
+  if (data.NODE_ENV === 'production' && !data.NEXTAUTH_SECRET && !isBuildPhase) {
+    throw new Error("❌ SECURITY CRITICAL: NEXTAUTH_SECRET environment variable is missing in production.");
   }
 
   // Warning en dev pour sensibiliser
   if (data.NODE_ENV === 'development' && !data.SALT) {
     console.warn("⚠️ [SECURITY] Running without a SALT. IP hashing will be weak. Define SALT in .env.local");
   }
+  if (data.NODE_ENV === 'development' && !data.NEXTAUTH_SECRET) {
+    console.warn("⚠️ [SECURITY] Running without NEXTAUTH_SECRET. Define it in .env for a stable auth session.");
+  }
 
   return {
     ...data,
-    SALT: data.SALT || "dev-fallback-salt-min-32-chars-long"
+    SALT: data.SALT || "dev-fallback-salt-min-32-chars-long",
+    NEXTAUTH_SECRET: data.NEXTAUTH_SECRET || "dev-fallback-nextauth-secret-min-32-chars"
   };
 }
 

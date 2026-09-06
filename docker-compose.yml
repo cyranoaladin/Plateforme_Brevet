@@ -2,13 +2,97 @@ services:
   qdrant:
     image: qdrant/qdrant:v1.11.0
     container_name: brevet-master-qdrant
-    ports:
-      - "6333:6333"
-      - "6334:6334"
+    restart: unless-stopped
+    # No published ports: Qdrant is reachable only from the "app" service
+    # over the private brevet-internal network (http://qdrant:6333).
+    # Do not add a "ports:" mapping here without a documented operational need.
     volumes:
-      - ./qdrant_storage:/qdrant/storage
+      - qdrant_storage:/qdrant/storage
+    networks:
+      - brevet-internal
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
-      interval: 5s
+      # The official qdrant/qdrant image has neither curl nor wget, so a
+      # plain "is the port open" check (bash's /dev/tcp) is the only option
+      # without installing extra tooling. A raw TCP connect is NOT enough
+      # here though: Qdrant accepts TCP connections while it is still
+      # recovering collections from disk, and /healthz alone can return 200
+      # before /readyz confirms shards actually finished loading (this is
+      # also the endpoint docs/RELEASE_CHECKLIST.md checks in production).
+      # So this issues a real HTTP GET to /readyz over that same /dev/tcp
+      # socket and greps the response for "200" + the documented body,
+      # rather than accepting the bare TCP handshake as success.
+      # CMD-SHELL runs via /bin/sh (ash on this image), which has no
+      # /dev/tcp - it is a bash-only feature - so bash must be invoked
+      # explicitly (the qdrant/qdrant image does ship bash; see the comment
+      # above about missing curl/wget).
+      test:
+        - "CMD-SHELL"
+        - >-
+          bash -c "
+          exec 3<>/dev/tcp/localhost/6333 &&
+          printf 'GET /readyz HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 &&
+          response=\$$(cat <&3) &&
+          echo \"\$$response\" | grep -q 'HTTP/1.1 200' &&
+          echo \"\$$response\" | grep -qi 'all shards are ready'
+          "
+      interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: brevet-master-app
+    restart: unless-stopped
+    # Optional on purpose: a brand-new clean checkout only has .env.example
+    # tracked in git (see README's "Configuration" step, which creates
+    # ./.env from it). Making this required would make a bare
+    # `docker compose up -d` (and scripts/smoke-rag.mjs, which only needs
+    # the "qdrant" service and never reads this file) fail at the Compose
+    # config-parsing stage - before any container even starts - with a
+    # generic "env file not found" error the docs never mention. Missing
+    # required runtime secrets (SALT in production) are instead caught with
+    # a clear, actionable error by src/config/env.ts's fail-fast check.
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=file:/app/data/brevet.sqlite
+      - QDRANT_URL=http://qdrant:6333
+    depends_on:
+      qdrant:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3010:3000"
+    volumes:
+      - brevet_data:/app/data
+    networks:
+      - brevet-internal
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  brevet_data:
+  qdrant_storage:
+
+networks:
+  brevet-internal:
+    driver: bridge

@@ -1,4 +1,5 @@
 import { QdrantClient } from '@qdrant/js-client-rest';
+import { v5 as uuidv5 } from 'uuid';
 import { RetrievedChunk } from './types';
 import { generateLocalEmbedding } from './localEmbedding';
 import { env } from '@/config/env';
@@ -9,6 +10,24 @@ const COLLECTION_NAME = "aria_docs";
 const VECTOR_SIZE = 384;
 const SEARCH_TIMEOUT_MS = env.QDRANT_TIMEOUT_MS || 2500;
 
+// Qdrant only accepts point IDs that are an unsigned 64-bit integer or a
+// UUID string - it rejects arbitrary strings like "1" or "docId:page:0"
+// (the shapes callers actually pass in via scripts/ingest-pdfs.ts's
+// chunker and the debug seed route) with a 400 Bad Request. Rather than
+// pushing that constraint onto every caller, chunk ids are deterministically
+// mapped to a UUIDv5 here (stable across re-ingestion/re-seeding, so
+// upserts of the same logical chunk stay idempotent) and the original,
+// human-meaningful id is preserved in the payload as "chunkId" - that's
+// what search() below surfaces back as RetrievedChunk.id, since it is what
+// gets embedded in the LLM prompt and validated against [Source:ID]
+// citation markers (see ariaPromptBuilder.ts / policy.ts).
+const QDRANT_ID_NAMESPACE = "b6f0a2c4-6b8e-4f9a-9c1d-2e6f7a8b9c0d";
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function toQdrantPointId(chunkId: string): string {
+  return UUID_RE.test(chunkId) ? chunkId : uuidv5(chunkId, QDRANT_ID_NAMESPACE);
+}
+
 /**
  * Schéma de validation pour le payload Qdrant.
  * On autorise des champs arbitraires pour la flexibilité du RAG.
@@ -18,6 +37,7 @@ const QdrantPointSchema = z.object({
   score: z.number(),
   payload: z.object({
     text: z.string(),
+    chunkId: z.string().optional(),
     sourceTitle: z.string().optional(),
     sourceFile: z.string().optional(),
     page: z.number().optional(),
@@ -82,11 +102,17 @@ export class VectorStoreService {
       }
 
       const points = await Promise.all(chunks.map(async (chunk) => ({
-        id: chunk.id,
+        id: toQdrantPointId(chunk.id),
         vector: await generateLocalEmbedding(chunk.text),
         payload: {
           text: chunk.text,
-          ...chunk.metadata
+          // chunkId must win over anything with the same key in
+          // chunk.metadata (spread first, canonical field last): it is
+          // what search() relies on to recover the real, citable id (see
+          // toQdrantPointId above), so it must never be silently
+          // clobbered by caller-supplied metadata.
+          ...chunk.metadata,
+          chunkId: chunk.id
         }
       })));
 
@@ -125,7 +151,13 @@ export class VectorStoreService {
 
       return {
         chunks: results.map((r) => ({
-          id: String(r.id),
+          // Prefer the original chunkId stashed in the payload (see
+          // upsertChunks/toQdrantPointId above): the raw Qdrant point id is
+          // a UUID derived for storage purposes only and was never the
+          // caller-meaningful identifier used in [Source:ID] citations.
+          // Falls back to r.id for points written before this field
+          // existed, or by any other producer of this collection.
+          id: String(r.payload?.chunkId ?? r.id),
           text: String(r.payload?.text || ""),
           score: r.score,
           metadata: r.payload || {}

@@ -10,6 +10,6 @@
 ```bash
 nvm use
 npm ci
-cp .env.example .env.local
+cp .env.example .env
 npm run dev
 ```

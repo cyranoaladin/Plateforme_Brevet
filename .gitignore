@@ -40,4 +40,20 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-\n# Ingestion data\ndata/pdfs/*\n!data/pdfs/.gitkeep\ndata/ingestion/*\n!data/ingestion/.gitkeep
+
+# Ingestion data
+data/pdfs/*
+!data/pdfs/.gitkeep
+data/ingestion/*
+!data/ingestion/.gitkeep
+
+# Qdrant runtime data (was accidentally git-tracked; untracked in
+# remediation/brevet-convergence-20260906 - see git history for the
+# git rm --cached that removed it). This is live vector-store state,
+# not source, and must never be bind-mounted into a git worktree.
+qdrant_storage/
+
+# Python (scripts/ingestion)
+__pycache__/
+*.pyc
+.venv/

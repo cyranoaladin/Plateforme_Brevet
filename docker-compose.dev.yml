@@ -1,0 +1,23 @@
+# Local-development-only overlay - must be explicitly opted into.
+#
+# Deliberately NOT named docker-compose.override.yml: that filename is
+# auto-merged by Docker Compose into every plain `docker compose ...`
+# invocation run from this directory (see
+# https://docs.docker.com/compose/multiple-compose-files/merge/), which
+# would make host-exposure of Qdrant the DEFAULT behavior for the most
+# common command (a bare `docker compose up -d`) - including on a
+# production host, if an operator ever runs it there without remembering
+# to pass `-f docker-compose.yml`. Requiring this file to be named
+# explicitly on the command line makes safe (no exposure) the default, and
+# host exposure the opt-in - not the other way around.
+#
+# It exists so host-side tooling (scripts/smoke-rag.mjs, `npm run
+# ingest:pdf`, manual curl/Qdrant dashboard use) can reach Qdrant at
+# localhost:6333, which docker-compose.yml intentionally never publishes.
+# Use it explicitly for local dev:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d qdrant
+services:
+  qdrant:
+    ports:
+      # Loopback-only: never 0.0.0.0:6333, even for local dev.
+      - "127.0.0.1:6333:6333"

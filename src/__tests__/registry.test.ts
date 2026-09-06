@@ -10,7 +10,6 @@ describe('Content Registry (Strict Typing)', () => {
   });
 
   it('should return null when asking for a notion in French pack (which contains exercises)', async () => {
-    // @ts-expect-error: Notion does not exist in French exercise pack
     const notion = await getNotion('francais', 'test-id');
     expect(notion).toBeNull();
   });
