@@ -33,8 +33,10 @@ nvm use
 npm ci
 
 # Configurer les variables d'environnement
-cp .env.example .env.local
-# Éditez .env.local avec vos clés (OpenAI/OpenRouter si mode RAG activé)
+# `.env` est LE fichier canonique : lu à la fois par Next.js (dev/build/start)
+# et par `docker compose` (voir docker-compose.yml). Il est ignoré par Git.
+cp .env.example .env
+# Éditez .env avec vos clés (OpenAI/OpenRouter si mode RAG activé)
 ```
 
 ## ⌨️ Scripts Disponibles
@@ -58,10 +60,19 @@ Pour enrichir la base de connaissances du Mentor ARIA :
 ## 🛠️ Quickstart RAG (Environnement Local)
 
 Pour tester le pipeline complet avec Qdrant :
-1.  **Lancer Qdrant** : `docker compose up -d`
-2.  **Configuration** : S'assurer que `.env.local` contient `ARIA_MODE=rag` et `QDRANT_URL=http://localhost:6333`.
+1.  **Lancer Qdrant** : `docker compose up -d qdrant` — publie Qdrant sur `127.0.0.1:6333` via `docker-compose.override.yml` (chargé automatiquement en local). Ne cible que le service `qdrant` : un `docker compose up -d` sans argument démarre aussi le service `app`, qui occupe le port 3010 utilisé par `next dev`/`next start` ci-dessous.
+2.  **Configuration** : S'assurer que `.env` contient `ARIA_MODE=rag` et `QDRANT_URL=http://localhost:6333`.
 3.  **Ingestion** : `npm run ingest:pdf` (après avoir ajouté des PDF dans `data/pdfs/`).
 4.  **Vérification End-to-End** : `npm run smoke:rag` (démarre Qdrant, simule l'ingestion, lance la production et vérifie les citations).
+
+### Déploiement (production / CI)
+
+`docker-compose.override.yml` est réservé au développement local : il publie le port Qdrant sur l'hôte, ce qu'une production ne doit jamais faire. En production/CI, excluez-le explicitement :
+```bash
+cp .env.example .env   # puis renseigner SALT et les clés nécessaires
+docker compose -f docker-compose.yml up -d
+```
+(ou `export COMPOSE_FILE=docker-compose.yml`). Qdrant n'est alors joignable que depuis le service `app`, sur le réseau interne `brevet-internal` (`http://qdrant:6333`).
 
 ## 🧪 Qualité & Fiabilité
 

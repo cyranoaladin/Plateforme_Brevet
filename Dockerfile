@@ -78,7 +78,12 @@ RUN npm run build
 
 # Stage 4: Runner
 FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS runner
-RUN apk add --no-cache libc6-compat openssl
+# su-exec (a ~15KB setuid-and-exec helper, alpine's equivalent of gosu) is
+# needed so docker-entrypoint.sh can start as root just long enough to fix
+# /app/data's ownership on an existing volume, then drop to the
+# unprivileged "nextjs" user for the actual Prisma migration and app
+# process - see the ownership-repair step in docker-entrypoint.sh.
+RUN apk add --no-cache libc6-compat openssl su-exec
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -86,7 +91,14 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 -G nodejs nextjs
 
-# Create persistent data directory with correct ownership (matches nextjs 1001:1001)
+# Create persistent data directory with correct ownership (matches nextjs
+# 1001:1001). This only sets the ownership baked into the IMAGE layer: a
+# brand-new named volume mounted at /app/data inherits this automatically
+# (Docker seeds a new volume from the image path's existing content on
+# first use), but an EXISTING volume from a prior run keeps whatever
+# ownership it already has - including root, if it predates this line or
+# was ever touched by a root process. docker-entrypoint.sh repairs that
+# case at container startup instead of relying on this build-time chown.
 RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data && chmod 770 /app/data
 
 # next.config.ts sets output: "standalone", so the builder already traced
@@ -120,7 +132,13 @@ RUN chmod +x /app/docker-entrypoint.sh
 # own code from the runtime image.
 RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
-USER nextjs
+# Intentionally NOT switching to USER nextjs here: the container must start
+# as root so docker-entrypoint.sh can repair /app/data's ownership on an
+# existing volume before anything else runs. This is not "running the app
+# as root" - the entrypoint's very first action, before the Prisma
+# migration or the app itself ever runs, is to re-exec itself via su-exec
+# as the unprivileged nextjs (1001:1001) user and never regain root from
+# there (exec replaces the process; there is no lingering root parent).
 EXPOSE 3000
 ENV PORT=3000
 

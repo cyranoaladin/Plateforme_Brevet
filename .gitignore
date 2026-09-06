@@ -52,3 +52,8 @@ data/ingestion/*
 # git rm --cached that removed it). This is live vector-store state,
 # not source, and must never be bind-mounted into a git worktree.
 qdrant_storage/
+
+# Python (scripts/ingestion)
+__pycache__/
+*.pyc
+.venv/

@@ -46,3 +46,10 @@ describe('Security: Env SALT Validation', () => {
     expect(env.SALT?.length ?? 0).toBeGreaterThanOrEqual(16);
   });
 });
+
+describe('Security: Env NEXTAUTH_SECRET Validation', () => {
+  it('should have a NEXTAUTH_SECRET of at least 32 chars (NextAuth requires this to sign sessions in production)', async () => {
+    const { env } = await import('../config/env');
+    expect(env.NEXTAUTH_SECRET?.length ?? 0).toBeGreaterThanOrEqual(32);
+  });
+});

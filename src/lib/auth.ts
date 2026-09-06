@@ -5,6 +5,7 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import { comparePassword } from "@/lib/crypto"
+import { env } from "@/config/env"
 
 declare module "next-auth" {
   interface Session {
@@ -55,6 +56,11 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
+  // Explicit rather than relying on NextAuth's own process.env.NEXTAUTH_SECRET
+  // fallback: src/config/env.ts validates and fails fast (in production)
+  // with a clear, actionable error instead of NextAuth's generic
+  // MissingSecretError 500 on every auth-touching route.
+  secret: env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
   },

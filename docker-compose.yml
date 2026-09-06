@@ -16,10 +16,30 @@ services:
         max-size: "10m"
         max-file: "5"
     healthcheck:
-      # The official qdrant/qdrant image has neither curl nor wget, so the
-      # healthcheck opens a raw TCP connection to the REST port via bash's
-      # /dev/tcp instead of doing an HTTP request.
-      test: ["CMD-SHELL", "bash -c '</dev/tcp/localhost/6333' || exit 1"]
+      # The official qdrant/qdrant image has neither curl nor wget, so a
+      # plain "is the port open" check (bash's /dev/tcp) is the only option
+      # without installing extra tooling. A raw TCP connect is NOT enough
+      # here though: Qdrant accepts TCP connections while it is still
+      # recovering collections from disk, and /healthz alone can return 200
+      # before /readyz confirms shards actually finished loading (this is
+      # also the endpoint docs/RELEASE_CHECKLIST.md checks in production).
+      # So this issues a real HTTP GET to /readyz over that same /dev/tcp
+      # socket and greps the response for "200" + the documented body,
+      # rather than accepting the bare TCP handshake as success.
+      # CMD-SHELL runs via /bin/sh (ash on this image), which has no
+      # /dev/tcp - it is a bash-only feature - so bash must be invoked
+      # explicitly (the qdrant/qdrant image does ship bash; see the comment
+      # above about missing curl/wget).
+      test:
+        - "CMD-SHELL"
+        - >-
+          bash -c "
+          exec 3<>/dev/tcp/localhost/6333 &&
+          printf 'GET /readyz HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 &&
+          response=\$$(cat <&3) &&
+          echo \"\$$response\" | grep -q 'HTTP/1.1 200' &&
+          echo \"\$$response\" | grep -qi 'all shards are ready'
+          "
       interval: 10s
       timeout: 5s
       retries: 5
@@ -31,7 +51,18 @@ services:
       dockerfile: Dockerfile
     container_name: brevet-master-app
     restart: unless-stopped
-    env_file: .env
+    # Optional on purpose: a brand-new clean checkout only has .env.example
+    # tracked in git (see README's "Configuration" step, which creates
+    # ./.env from it). Making this required would make a bare
+    # `docker compose up -d` (and scripts/smoke-rag.mjs, which only needs
+    # the "qdrant" service and never reads this file) fail at the Compose
+    # config-parsing stage - before any container even starts - with a
+    # generic "env file not found" error the docs never mention. Missing
+    # required runtime secrets (SALT in production) are instead caught with
+    # a clear, actionable error by src/config/env.ts's fail-fast check.
+    env_file:
+      - path: .env
+        required: false
     environment:
       - NODE_ENV=production
       - PORT=3000
